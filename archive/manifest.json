@@ -1,0 +1,42 @@
+{
+    "version":  1,
+    "generated_at":  "2026-05-19T05:15:28.6288962Z",
+    "days":  [
+                 {
+                     "date":  "2026-05-19",
+                     "latest_time":  "09-50",
+                     "latest_snapshot":  {
+                                             "time_label":  "09-50",
+                                             "filename":  "09-50.html",
+                                             "relative_report_path":  "html/2026-05-19/09-50.html"
+                                         }
+                 },
+                 {
+                     "date":  "2026-03-26",
+                     "latest_time":  "18-10",
+                     "latest_snapshot":  {
+                                             "time_label":  "18-10",
+                                             "filename":  "18-10.html",
+                                             "relative_report_path":  "html/2026-03-26/18-10.html"
+                                         }
+                 },
+                 {
+                     "date":  "2026-03-25",
+                     "latest_time":  "18-40",
+                     "latest_snapshot":  {
+                                             "time_label":  "18-40",
+                                             "filename":  "18-40.html",
+                                             "relative_report_path":  "html/2026-03-25/18-40.html"
+                                         }
+                 },
+                 {
+                     "date":  "2026-03-24",
+                     "latest_time":  "18-29",
+                     "latest_snapshot":  {
+                                             "time_label":  "18-29",
+                                             "filename":  "18-29.html",
+                                             "relative_report_path":  "html/2026-03-24/18-29.html"
+                                         }
+                 }
+             ]
+}
