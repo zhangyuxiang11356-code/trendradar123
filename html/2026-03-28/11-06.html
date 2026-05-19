@@ -1,0 +1,3397 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+        <title>Pulse Observer</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <style>
+            :root {
+                --page-bg: #f5ecdf;
+                --page-bg-soft: #fbf7f0;
+                --card-bg: rgba(255, 252, 247, 0.94);
+                --card-bg-strong: rgba(255, 250, 244, 0.98);
+                --card-border: rgba(221, 206, 186, 0.82);
+                --card-shadow: 0 18px 40px rgba(138, 111, 78, 0.08);
+                --card-shadow-soft: 0 10px 24px rgba(138, 111, 78, 0.05);
+                --text-main: #2e261e;
+                --text-soft: #6a5e4f;
+                --accent: #c46f45;
+                --accent-soft: #f4e6d6;
+                --green-soft: #e4efe8;
+            }
+
+            * { box-sizing: border-box; }
+            body {
+                font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+                margin: 0;
+                padding: clamp(48px, 6vw, 96px);
+                background:
+                    radial-gradient(circle at 12% 14%, rgba(233, 200, 169, 0.38), transparent 22%),
+                    radial-gradient(circle at 88% 8%, rgba(214, 228, 219, 0.32), transparent 18%),
+                    radial-gradient(circle at 18% 88%, rgba(245, 224, 201, 0.34), transparent 24%),
+                    linear-gradient(180deg, #f4eadc 0%, #f7efe4 44%, #f8f3eb 100%);
+                color: var(--text-main);
+                line-height: 1.6;
+            }
+
+            body.pulse-static {
+                padding: 0;
+                background:
+                    radial-gradient(circle at 14% 10%, rgba(208, 224, 247, 0.35), transparent 18%),
+                    radial-gradient(circle at 82% 18%, rgba(243, 226, 213, 0.38), transparent 24%),
+                    linear-gradient(180deg, #eef4fc 0%, #f5f8fc 42%, #fafbfd 100%);
+            }
+
+            body.pulse-static .pulse-static-sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 272px;
+                padding: 28px 22px;
+                background: linear-gradient(180deg, rgba(241, 246, 253, 0.97) 0%, rgba(232, 240, 251, 0.95) 100%);
+                border-right: 1px solid rgba(205, 217, 232, 0.9);
+                backdrop-filter: blur(18px);
+                z-index: 20;
+            }
+
+            body.pulse-static .pulse-static-brand {
+                padding: 8px 2px 24px;
+            }
+
+            body.pulse-static .pulse-static-title {
+                font-size: 26px;
+                font-weight: 800;
+                color: #15243b;
+                letter-spacing: -0.03em;
+            }
+
+            body.pulse-static .pulse-static-note {
+                margin-top: 8px;
+                color: #74849c;
+                font-size: 13px;
+            }
+
+            body.pulse-static .pulse-static-nav {
+                display: grid;
+                gap: 10px;
+            }
+
+            body.pulse-static .pulse-static-nav a {
+                display: flex;
+                align-items: center;
+                min-height: 48px;
+                padding: 0 16px;
+                border-radius: 16px;
+                font-size: 16px;
+                font-weight: 600;
+                color: #4f627f;
+                text-decoration: none;
+                transition: all 0.18s ease;
+            }
+
+            body.pulse-static .pulse-static-nav a:hover,
+            body.pulse-static .pulse-static-nav a.is-active {
+                color: #132238;
+                background: rgba(255, 255, 255, 0.76);
+                box-shadow: inset 0 0 0 1px rgba(205, 217, 232, 0.86);
+            }
+
+            body.pulse-static .pulse-static-main {
+                margin-left: 272px;
+                min-height: 100vh;
+                padding: 24px;
+            }
+
+            body.pulse-static .container {
+                max-width: none;
+                margin: 0;
+                border-radius: 0;
+                background: transparent;
+                border: none;
+                box-shadow: none;
+            }
+
+            body.pulse-static .header {
+                margin-bottom: 24px;
+                padding: 30px 30px 18px;
+                background:
+                    radial-gradient(circle at 88% 12%, rgba(223, 235, 248, 0.55), transparent 18%),
+                    linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(248,251,255,0.95) 100%);
+                border: 1px solid rgba(208, 220, 235, 0.9);
+                border-radius: 30px;
+                box-shadow: 0 20px 46px rgba(180, 194, 214, 0.13);
+            }
+
+            body.pulse-static .header-title {
+                font-family: 'Noto Serif SC', serif;
+                font-size: clamp(42px, 4.4vw, 66px);
+                line-height: 1.02;
+                letter-spacing: -0.04em;
+                color: #1d2c47;
+                margin-bottom: 12px;
+            }
+
+            body.pulse-static .pulse-static-subtitle {
+                color: #5f7392;
+                font-size: 18px;
+                margin: 0 0 18px;
+                max-width: 760px;
+            }
+
+            body.pulse-static .header-shell {
+                grid-template-columns: 1fr;
+                gap: 18px;
+                margin-top: 0;
+            }
+
+            body.pulse-static .filter-card {
+                display: none;
+            }
+
+            body.pulse-static .save-buttons {
+                top: 24px;
+                right: 24px;
+            }
+
+            body.pulse-static .content {
+                padding: 0;
+            }
+
+            body.pulse-static .dashboard-card,
+            body.pulse-static .social-section,
+            body.pulse-static .rss-section,
+            body.pulse-static .hotlist-section {
+                scroll-margin-top: 24px;
+            }
+
+            body.pulse-static .dashboard-grid {
+                gap: 24px;
+                margin-top: 24px;
+            }
+
+            body.pulse-static .dashboard-card,
+            body.pulse-static .dashboard-hotlist,
+            body.pulse-static .dashboard-rss,
+            body.pulse-static .dashboard-ai,
+            body.pulse-static .dashboard-social,
+            body.pulse-static .pulse-static-sources {
+                border-radius: 30px;
+                border: 1px solid rgba(208, 220, 235, 0.9);
+                background: rgba(255, 255, 255, 0.88);
+                box-shadow: 0 20px 46px rgba(180, 194, 214, 0.13);
+            }
+
+            body.pulse-static .dashboard-ai,
+            body.pulse-static .dashboard-social,
+            body.pulse-static .dashboard-hotlist,
+            body.pulse-static .dashboard-rss,
+            body.pulse-static .pulse-static-sources {
+                margin-top: 24px;
+            }
+
+            body.pulse-static .pulse-static-sources {
+                margin-top: 24px;
+                padding: 24px;
+            }
+
+            body.pulse-static .pulse-static-source-tabs {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-bottom: 22px;
+            }
+
+            body.pulse-static .pulse-static-source-tab {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 46px;
+                padding: 0 18px;
+                border-radius: 999px;
+                background: rgba(243, 247, 252, 0.92);
+                color: #607694;
+                border: 1px solid rgba(216, 226, 238, 0.94);
+                font-size: 15px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.18s ease;
+            }
+
+            body.pulse-static .pulse-static-source-tab.is-active {
+                background: #15223b;
+                color: #f6f8fc;
+                box-shadow: 0 10px 24px rgba(21, 34, 59, 0.16);
+                border-color: #15223b;
+            }
+
+            body.pulse-static .pulse-static-source-tab-count {
+                opacity: 0.78;
+                font-weight: 800;
+            }
+
+            body.pulse-static .pulse-static-sources-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 18px;
+            }
+
+            body.pulse-static .pulse-static-source-card {
+                padding: 18px 18px 20px;
+                border-radius: 24px;
+                border: 1px solid rgba(220, 228, 238, 0.94);
+                background: rgba(255, 255, 255, 0.98);
+                box-shadow: 0 10px 26px rgba(184, 196, 214, 0.11);
+            }
+
+            body.pulse-static .pulse-static-source-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                margin-bottom: 18px;
+            }
+
+            body.pulse-static .pulse-static-source-brand {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                min-width: 0;
+            }
+
+            body.pulse-static .pulse-static-source-icon {
+                width: 44px;
+                height: 44px;
+                border-radius: 16px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(245, 248, 252, 0.96);
+                border: 1px solid rgba(222, 230, 240, 0.94);
+                color: #7083a0;
+                font-size: 22px;
+                flex: 0 0 auto;
+            }
+
+            body.pulse-static .pulse-static-source-name {
+                font-size: 16px;
+                font-weight: 700;
+                color: #20314c;
+                line-height: 1.3;
+                word-break: break-word;
+            }
+
+            body.pulse-static .pulse-static-source-status {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 6px 12px;
+                border-radius: 999px;
+                background: rgba(244, 249, 244, 0.96);
+                color: #627c72;
+                font-size: 13px;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
+            body.pulse-static .pulse-static-source-status-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 999px;
+                background: #16c15d;
+                flex: 0 0 auto;
+            }
+
+            body.pulse-static .pulse-static-source-tag {
+                display: inline-flex;
+                align-items: center;
+                min-height: 32px;
+                padding: 0 12px;
+                border-radius: 12px;
+                background: rgba(241, 246, 252, 0.96);
+                color: #4d6382;
+                font-size: 12px;
+                font-weight: 800;
+                margin-bottom: 18px;
+            }
+
+            body.pulse-static .pulse-static-source-tag[data-kind="RSS"] {
+                background: rgba(233, 242, 255, 0.98);
+                color: #2e66ff;
+            }
+
+            body.pulse-static .pulse-static-source-tag[data-kind="SOCIAL"] {
+                background: rgba(255, 241, 231, 0.98);
+                color: #ea6a2e;
+            }
+
+            body.pulse-static .pulse-static-source-tag[data-kind="WEB"] {
+                background: rgba(245, 247, 250, 0.98);
+                color: #60738e;
+            }
+
+            body.pulse-static .pulse-static-source-meta,
+            body.pulse-static .pulse-static-source-extra {
+                font-size: 13px;
+                line-height: 1.7;
+                color: #70819b;
+            }
+
+            @media (max-width: 1100px) {
+                body.pulse-static .pulse-static-sidebar {
+                    position: relative;
+                    width: auto;
+                    height: auto;
+                    min-height: auto;
+                    border-right: none;
+                    border-bottom: 1px solid rgba(205, 217, 232, 0.9);
+                }
+
+                body.pulse-static .pulse-static-main {
+                    margin-left: 0;
+                }
+
+                body.pulse-static .pulse-static-sources-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .container {
+                max-width: 1060px;
+                margin: 0 auto;
+                background: rgba(255, 250, 244, 0.62);
+                border-radius: 34px;
+                border: 1px solid rgba(228, 214, 194, 0.7);
+                overflow: hidden;
+                box-shadow: 0 30px 80px rgba(129, 100, 70, 0.08);
+                backdrop-filter: blur(14px);
+            }
+
+            .header {
+                background:
+                    radial-gradient(circle at 88% 16%, rgba(216, 231, 224, 0.32), transparent 16%),
+                    radial-gradient(circle at 8% 12%, rgba(242, 222, 203, 0.34), transparent 18%),
+                    linear-gradient(135deg, rgba(255,253,249,0.98) 0%, rgba(250,244,236,0.96) 100%);
+                color: var(--text-main);
+                padding: 34px 34px 34px;
+                text-align: left;
+                position: relative;
+                border-bottom: 1px solid rgba(226, 212, 194, 0.76);
+            }
+
+            .header-shell {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                align-items: stretch;
+                gap: 26px;
+                margin-top: 14px;
+            }
+
+            .header-left {
+                min-width: 0;
+                width: 100%;
+                max-width: none;
+                display: flex;
+            }
+
+            .header-right {
+                min-width: 0;
+                width: 100%;
+                max-width: none;
+                display: flex;
+            }
+
+            .save-buttons {
+                position: absolute;
+                top: 16px;
+                right: 16px;
+                display: flex;
+                gap: 8px;
+            }
+
+            .save-btn {
+                background: rgba(255, 250, 244, 0.98);
+                border: 1px solid rgba(223, 204, 182, 0.94);
+                color: #5d4c3e;
+                padding: 10px 17px;
+                border-radius: 999px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 700;
+                transition: all 0.2s ease;
+                backdrop-filter: blur(10px);
+                white-space: nowrap;
+                box-shadow: 0 10px 22px rgba(154, 120, 82, 0.08);
+            }
+
+            .save-btn:hover {
+                background: #fffdfa;
+                border-color: rgba(190, 177, 156, 0.9);
+                transform: translateY(-1px);
+            }
+
+            .save-btn:active {
+                transform: translateY(0);
+            }
+
+            .save-btn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            .header-title {
+                font-family: 'Noto Serif SC', serif;
+                font-size: 26px;
+                font-weight: 900;
+                letter-spacing: 0.02em;
+                margin: 0 0 20px;
+                color: #241c16;
+                max-width: 680px;
+            }
+
+            .header-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-auto-rows: 1fr;
+                gap: 16px;
+                font-size: 13px;
+                opacity: 0.95;
+                width: 100%;
+                max-width: none;
+                margin: 0;
+                height: 100%;
+            }
+
+            .info-item {
+                text-align: left;
+                padding: 18px 18px;
+                border-radius: 22px;
+                background: var(--card-bg-strong);
+                border: 1px solid var(--card-border);
+                box-shadow: var(--card-shadow-soft), inset 0 1px 0 rgba(255,255,255,0.8);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                min-height: 108px;
+            }
+
+            .info-label {
+                display: block;
+                font-size: 11px;
+                color: #8b7b69;
+                opacity: 1;
+                margin-bottom: 8px;
+                letter-spacing: 0.05em;
+                font-weight: 700;
+            }
+
+            .info-value {
+                font-weight: 800;
+                font-size: 16px;
+                color: #30261e;
+            }
+
+            .filter-card {
+                min-width: 0;
+                width: 100%;
+                height: 100%;
+                padding: 20px 22px;
+                border-radius: 28px;
+                border: 1px solid var(--card-border);
+                background:
+                    linear-gradient(180deg, rgba(255,252,247,0.98) 0%, rgba(250,245,238,0.97) 100%),
+                    radial-gradient(circle at 84% 16%, rgba(225, 236, 230, 0.3), transparent 22%);
+                box-shadow: var(--card-shadow);
+            }
+
+            .filter-card-body {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 12px 14px;
+                align-items: start;
+            }
+
+            .filter-card-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                margin-bottom: 12px;
+            }
+
+            .filter-card-title {
+                font-family: 'Noto Serif SC', serif;
+                font-size: 20px;
+                font-weight: 900;
+                color: #2b2119;
+            }
+
+            .filter-card-badge {
+                display: inline-flex;
+                align-items: center;
+                padding: 5px 11px;
+                border-radius: 999px;
+                background: var(--green-soft);
+                color: #50675c;
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            .filter-card-block {
+                padding: 14px 15px;
+                border: 1px solid rgba(223, 208, 188, 0.72);
+                border-radius: 20px;
+                background: rgba(255, 251, 246, 0.92);
+                min-width: 0;
+            }
+
+            .filter-card-block-topics {
+                grid-column: 1 / -1;
+            }
+
+            .filter-card-label {
+                font-size: 11px;
+                letter-spacing: 0.06em;
+                color: #8a7f72;
+                margin-bottom: 8px;
+                font-weight: 700;
+            }
+
+            .filter-topic-list,
+            .filter-step-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px 10px;
+            }
+
+            .filter-topic-item,
+            .filter-step-item {
+                font-size: 13px;
+                color: #4c4d45;
+                line-height: 1.65;
+            }
+
+            .filter-topic-item {
+                display: inline-flex;
+                align-items: center;
+                padding: 6px 12px;
+                border-radius: 999px;
+                background: rgba(244, 236, 225, 0.92);
+                border: 1px solid rgba(223, 205, 183, 0.88);
+                white-space: nowrap;
+            }
+
+            .filter-step-list {
+                display: grid;
+                gap: 6px;
+            }
+
+            .filter-rule-text {
+                font-size: 13px;
+                color: #5c564c;
+                line-height: 1.72;
+            }
+
+            .filter-metrics {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 10px;
+            }
+
+            .filter-metric {
+                display: inline-flex;
+                align-items: center;
+                padding: 6px 11px;
+                border-radius: 999px;
+                background: rgba(247, 238, 225, 0.96);
+                border: 1px solid rgba(220, 206, 185, 0.88);
+                font-size: 12px;
+                color: #645a4f;
+                font-weight: 600;
+            }
+
+            body.pulse-enabled {
+                padding: 0;
+                background:
+                    radial-gradient(circle at 16% 14%, rgba(211, 224, 242, 0.38), transparent 20%),
+                    radial-gradient(circle at 78% 18%, rgba(244, 226, 210, 0.42), transparent 24%),
+                    linear-gradient(180deg, #eef4fd 0%, #f5f8fc 36%, #fafbfd 100%);
+            }
+
+            body.pulse-enabled .container {
+                max-width: none;
+                margin: 0;
+                min-height: 100vh;
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+                background: transparent;
+                overflow: visible;
+            }
+
+            body.pulse-enabled .pulse-shell {
+                display: grid;
+                grid-template-columns: 276px minmax(0, 1fr);
+                min-height: 100vh;
+            }
+
+            body.pulse-enabled .pulse-sidebar {
+                position: sticky;
+                top: 0;
+                align-self: start;
+                min-height: 100vh;
+                padding: 28px 22px;
+                border-right: 1px solid rgba(205, 217, 232, 0.9);
+                background: linear-gradient(180deg, rgba(241, 246, 253, 0.96) 0%, rgba(233, 240, 250, 0.94) 100%);
+                backdrop-filter: blur(18px);
+            }
+
+            body.pulse-enabled .pulse-brand {
+                padding: 6px 4px 24px;
+            }
+
+            body.pulse-enabled .pulse-brand-title {
+                font-size: 26px;
+                font-weight: 800;
+                letter-spacing: -0.03em;
+                color: #18263d;
+            }
+
+            body.pulse-enabled .pulse-brand-note {
+                margin-top: 8px;
+                font-size: 13px;
+                color: #75839a;
+            }
+
+            body.pulse-enabled .pulse-nav {
+                display: grid;
+                gap: 10px;
+                margin-top: 8px;
+            }
+
+            body.pulse-enabled .pulse-nav-link {
+                display: flex;
+                align-items: center;
+                min-height: 48px;
+                padding: 0 16px;
+                border-radius: 16px;
+                color: #4e607c;
+                font-size: 16px;
+                font-weight: 600;
+                text-decoration: none;
+                transition: all 0.18s ease;
+            }
+
+            body.pulse-enabled .pulse-nav-link:hover,
+            body.pulse-enabled .pulse-nav-link.active {
+                color: #132238;
+                background: rgba(255, 255, 255, 0.72);
+                box-shadow: inset 0 0 0 1px rgba(203, 216, 233, 0.82);
+            }
+
+            body.pulse-enabled .pulse-main {
+                position: relative;
+                padding: 28px 34px 44px;
+            }
+
+            body.pulse-enabled .pulse-save-buttons {
+                position: sticky;
+                top: 14px;
+                justify-content: flex-end;
+                margin-bottom: 14px;
+                z-index: 10;
+            }
+
+            body.pulse-enabled .pulse-section {
+                margin-bottom: 26px;
+            }
+
+            body.pulse-enabled .pulse-section-head {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                gap: 16px;
+                margin-bottom: 14px;
+            }
+
+            body.pulse-enabled .pulse-section-kicker {
+                font-family: 'Noto Serif SC', serif;
+                font-size: 26px;
+                font-weight: 700;
+                color: #1d2b45;
+                letter-spacing: -0.03em;
+            }
+
+            body.pulse-enabled .pulse-section-note {
+                color: #7e8ca3;
+                font-size: 14px;
+                text-align: right;
+            }
+
+            body.pulse-enabled .header.pulse-overview-panel {
+                padding: 30px;
+                border: 1px solid rgba(204, 215, 231, 0.9);
+                border-radius: 34px;
+                background:
+                    radial-gradient(circle at 86% 16%, rgba(231, 239, 248, 0.95), transparent 22%),
+                    linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(248,250,253,0.96) 100%);
+                box-shadow: 0 24px 56px rgba(163, 179, 201, 0.16);
+            }
+
+            body.pulse-enabled .header.pulse-overview-panel .header-title {
+                font-size: clamp(44px, 5vw, 72px);
+                line-height: 1.02;
+                margin-bottom: 12px;
+                color: #1d2c47;
+                max-width: none;
+            }
+
+            body.pulse-enabled .pulse-overview-subtitle {
+                margin: -2px 0 18px;
+                color: #5f7291;
+                font-size: 18px;
+                max-width: 760px;
+            }
+
+            body.pulse-enabled .header.pulse-overview-panel .header-shell {
+                grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+                gap: 24px;
+                margin-top: 0;
+            }
+
+            body.pulse-enabled .pulse-overview-main {
+                display: flex;
+                flex-direction: column;
+            }
+
+            body.pulse-enabled .header.pulse-overview-panel .header-info {
+                max-width: none;
+                gap: 18px;
+            }
+
+            body.pulse-enabled .header.pulse-overview-panel .info-item {
+                min-height: 126px;
+                border-radius: 24px;
+                padding: 22px 20px;
+                background: rgba(255, 255, 255, 0.78);
+                border: 1px solid rgba(207, 218, 234, 0.9);
+                box-shadow: 0 18px 34px rgba(188, 202, 221, 0.12);
+            }
+
+            body.pulse-enabled .header.pulse-overview-panel .info-label {
+                font-size: 12px;
+                color: #7a8aa1;
+            }
+
+            body.pulse-enabled .header.pulse-overview-panel .info-value {
+                font-size: 28px;
+                color: #1a2a42;
+                letter-spacing: -0.03em;
+            }
+
+            body.pulse-enabled .pulse-summary-card {
+                border-radius: 26px;
+                padding: 22px;
+                border: 1px solid rgba(209, 220, 236, 0.9);
+                background: rgba(245, 249, 255, 0.86);
+                box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+            }
+
+            body.pulse-enabled .pulse-summary-label {
+                display: inline-flex;
+                align-items: center;
+                height: 30px;
+                padding: 0 12px;
+                border-radius: 999px;
+                background: rgba(255,255,255,0.92);
+                border: 1px solid rgba(205, 217, 231, 0.9);
+                color: #5f7492;
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            body.pulse-enabled .pulse-summary-title {
+                margin-top: 18px;
+                font-size: 28px;
+                line-height: 1.18;
+                letter-spacing: -0.03em;
+                color: #20314f;
+                font-weight: 700;
+            }
+
+            body.pulse-enabled .pulse-summary-text {
+                margin-top: 12px;
+                color: #6f8098;
+                font-size: 14px;
+                line-height: 1.75;
+            }
+
+            body.pulse-enabled .dashboard-card,
+            body.pulse-enabled .pulse-source-grid {
+                padding: 24px;
+                border-radius: 30px;
+                border: 1px solid rgba(206, 218, 233, 0.9);
+                background: rgba(255, 255, 255, 0.9);
+                box-shadow: 0 24px 48px rgba(173, 188, 208, 0.14);
+            }
+
+            body.pulse-enabled .dashboard-grid {
+                display: block;
+                margin-top: 0;
+            }
+
+            body.pulse-enabled .dashboard-column + .dashboard-column {
+                margin-top: 0;
+            }
+
+            body.pulse-enabled .dashboard-card-header {
+                margin-bottom: 14px;
+            }
+
+            body.pulse-enabled .dashboard-card-title,
+            body.pulse-enabled .rss-section-title,
+            body.pulse-enabled .ai-section-title,
+            body.pulse-enabled .social-section-title {
+                font-family: 'Noto Serif SC', serif;
+                font-size: 24px;
+                font-weight: 700;
+                color: #1d2b45;
+            }
+
+            body.pulse-enabled .rank-explain,
+            body.pulse-enabled .social-sources {
+                padding: 14px 16px;
+                border-radius: 18px;
+                background: rgba(245, 249, 255, 0.82);
+                border: 1px solid rgba(210, 220, 236, 0.86);
+                color: #687a93;
+            }
+
+            body.pulse-enabled .dashboard-card-meta,
+            body.pulse-enabled .rss-section-count,
+            body.pulse-enabled .social-section-count {
+                min-width: 78px;
+                justify-content: center;
+                background: rgba(237, 244, 255, 0.95);
+                border: 1px solid rgba(208, 220, 237, 0.9);
+                color: #36537a;
+            }
+
+            body.pulse-enabled .news-item,
+            body.pulse-enabled .rss-item,
+            body.pulse-enabled .social-item {
+                border-radius: 18px !important;
+                border: 1px solid rgba(216, 225, 238, 0.92) !important;
+                background: linear-gradient(180deg, rgba(250, 252, 255, 0.98) 0%, rgba(255,255,255,0.96) 100%) !important;
+                box-shadow: 0 10px 24px rgba(190, 202, 220, 0.1) !important;
+            }
+
+            body.pulse-enabled .pulse-source-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 16px;
+            }
+
+            body.pulse-enabled .pulse-source-card {
+                min-width: 0;
+                padding: 18px;
+                border-radius: 22px;
+                border: 1px solid rgba(210, 220, 235, 0.88);
+                background: rgba(247, 250, 255, 0.86);
+            }
+
+            body.pulse-enabled .pulse-source-title {
+                font-size: 17px;
+                font-weight: 700;
+                color: #21314c;
+                margin-bottom: 10px;
+            }
+
+            body.pulse-enabled .pulse-source-text {
+                font-size: 14px;
+                line-height: 1.8;
+                color: #68809c;
+            }
+
+            @media (max-width: 1100px) {
+                body.pulse-enabled .pulse-shell {
+                    grid-template-columns: 1fr;
+                }
+
+                body.pulse-enabled .pulse-sidebar {
+                    position: relative;
+                    min-height: auto;
+                    border-right: none;
+                    border-bottom: 1px solid rgba(205, 217, 232, 0.9);
+                }
+
+                body.pulse-enabled .pulse-nav {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                }
+
+                body.pulse-enabled .pulse-main {
+                    padding: 22px;
+                }
+
+                body.pulse-enabled .header.pulse-overview-panel .header-shell,
+                body.pulse-enabled .pulse-source-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            @media (max-width: 720px) {
+                body.pulse-enabled .pulse-nav {
+                    grid-template-columns: 1fr 1fr;
+                }
+
+                body.pulse-enabled .header.pulse-overview-panel .header-info {
+                    grid-template-columns: 1fr;
+                }
+
+                body.pulse-enabled .pulse-section-head {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                body.pulse-enabled .pulse-section-note {
+                    text-align: left;
+                }
+            }
+
+            .content {
+                padding: 28px;
+            }
+
+            .dashboard-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 20px;
+                align-items: start;
+                margin-top: 28px;
+            }
+
+            .dashboard-column {
+                min-width: 0;
+            }
+
+            .dashboard-card {
+                min-width: 0;
+                padding: 24px;
+                border-radius: 28px;
+                border: 1px solid var(--card-border);
+                box-shadow: var(--card-shadow);
+                background: linear-gradient(180deg, rgba(255,252,247,0.98) 0%, rgba(252,248,242,0.96) 100%);
+            }
+
+            .dashboard-hotlist {
+                background:
+                    linear-gradient(180deg, rgba(255,253,249,0.98) 0%, rgba(251,247,240,0.96) 100%),
+                    radial-gradient(circle at top left, rgba(225, 234, 226, 0.22), transparent 28%);
+            }
+
+            .dashboard-hotlist .news-item {
+                background:
+                    linear-gradient(180deg, rgba(250,246,239,0.98) 0%, rgba(247,241,231,0.96) 100%);
+                border: 1px solid rgba(221, 208, 188, 0.96);
+                box-shadow:
+                    inset 0 1px 0 rgba(255,255,255,0.82),
+                    0 4px 14px rgba(126, 106, 76, 0.04);
+            }
+
+            .dashboard-rss {
+                background:
+                    linear-gradient(180deg, rgba(255,253,248,0.98) 0%, rgba(251,248,242,0.96) 100%),
+                    radial-gradient(circle at top right, rgba(207, 226, 221, 0.18), transparent 28%);
+            }
+
+            .dashboard-ai {
+                background:
+                    linear-gradient(180deg, rgba(255,253,248,0.99) 0%, rgba(250,246,239,0.97) 100%),
+                    radial-gradient(circle at 90% 18%, rgba(227, 235, 221, 0.22), transparent 24%);
+            }
+
+            .dashboard-social {
+                margin-top: 24px;
+                background:
+                    linear-gradient(180deg, rgba(255,253,248,0.99) 0%, rgba(249,245,236,0.96) 100%),
+                    radial-gradient(circle at 14% 18%, rgba(216, 228, 221, 0.22), transparent 24%);
+            }
+
+            .social-sources {
+                margin: 12px 0 18px;
+                padding: 12px 14px;
+                border-radius: 16px;
+                border: 1px solid rgba(216, 206, 189, 0.86);
+                background: rgba(252, 248, 241, 0.88);
+                color: #675f53;
+                font-size: 13px;
+                line-height: 1.7;
+            }
+
+            .social-grid {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 14px;
+                align-items: stretch;
+                grid-auto-rows: 1fr;
+            }
+
+            .social-item {
+                display: block;
+                background: linear-gradient(180deg, rgba(255,255,252,0.96) 0%, rgba(251,248,242,0.94) 100%);
+                border: 1px solid rgba(224, 214, 198, 0.92);
+                border-radius: 18px;
+                padding: 14px;
+                margin-bottom: 0;
+                min-height: 0;
+                height: 100%;
+            }
+
+            .social-item .news-number {
+                display: none;
+            }
+
+            .social-item .news-content {
+                min-width: 0;
+                height: auto;
+                padding-right: 0;
+            }
+
+            .social-item .news-header {
+                display: none;
+            }
+
+            .social-platform {
+                display: inline-flex;
+                align-items: center;
+                padding: 3px 8px;
+                border-radius: 999px;
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.03em;
+                background: #edf4ef;
+                color: #587766;
+            }
+
+            .social-author {
+                color: #756b5f;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .social-excerpt {
+                margin-top: 0;
+                color: #2f312c;
+                font-size: 14px;
+                line-height: 1.5;
+                display: -webkit-box;
+                -webkit-line-clamp: 8;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                word-break: break-word;
+            }
+
+            .social-text-link {
+                display: block;
+                color: inherit;
+                text-decoration: none;
+            }
+
+            .social-text-link:hover .social-excerpt {
+                color: #059669;
+                text-decoration: underline;
+            }
+
+            .social-meta-line {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex-wrap: wrap;
+                margin-bottom: 6px;
+            }
+
+            .social-time {
+                color: #8b8277;
+                font-size: 11px;
+            }
+
+            .social-pagination {
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                gap: 10px;
+                margin-top: 14px;
+            }
+
+            .social-page-btn {
+                border: 1px solid rgba(206, 195, 177, 0.9);
+                background: rgba(251, 246, 238, 0.96);
+                color: #5f564b;
+                border-radius: 999px;
+                padding: 5px 12px;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+            }
+
+            .social-page-btn:disabled {
+                cursor: not-allowed;
+                opacity: 0.45;
+            }
+
+            .social-page-indicator {
+                font-size: 12px;
+                color: #7b7164;
+                min-width: 84px;
+                text-align: center;
+            }
+
+            .dashboard-card .hotlist-section,
+            .dashboard-card .rss-section,
+            .dashboard-card .ai-section,
+            .dashboard-card .standalone-section,
+            .dashboard-card .new-section,
+            .dashboard-card .section-divider {
+                margin-top: 0;
+                padding-top: 0;
+                border-top: none;
+            }
+
+            .word-group {
+                margin-bottom: 40px;
+            }
+
+            .word-group:first-child {
+                margin-top: 0;
+            }
+
+            .word-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .word-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .word-name {
+                font-family: 'Noto Serif SC', serif;
+                font-size: 17px;
+                font-weight: 700;
+                color: #2e302b;
+                letter-spacing: 0.01em;
+            }
+
+            .word-count {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .word-count.hot { color: #dc2626; font-weight: 600; }
+            .word-count.warm { color: #ea580c; font-weight: 600; }
+
+            .word-index {
+                color: #999;
+                font-size: 12px;
+            }
+
+            .news-item {
+                margin-bottom: 20px;
+                padding: 16px 0;
+                border-bottom: 1px solid #f5f5f5;
+                position: relative;
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+
+            .news-item:last-child {
+                border-bottom: none;
+            }
+
+            .news-item.new::after {
+                content: "NEW";
+                position: absolute;
+                top: 12px;
+                right: 0;
+                background: #fbbf24;
+                color: #92400e;
+                font-size: 9px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 4px;
+                letter-spacing: 0.5px;
+            }
+
+            .news-number {
+                color: #7b7267;
+                font-size: 13px;
+                font-weight: 600;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f1ece3;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                align-self: flex-start;
+                margin-top: 8px;
+                border: 1px solid rgba(223, 212, 195, 0.86);
+            }
+
+            .news-content {
+                flex: 1;
+                min-width: 0;
+                padding-right: 40px;
+            }
+
+            .news-item.new .news-content {
+                padding-right: 50px;
+            }
+
+            .news-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+                flex-wrap: wrap;
+            }
+
+            .source-name {
+                color: #756b5f;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .keyword-tag {
+                color: #587766;
+                font-size: 12px;
+                font-weight: 600;
+                background: #edf4ef;
+                padding: 2px 6px;
+                border-radius: 999px;
+            }
+
+            .rank-num {
+                color: #fffdf7;
+                background: #7e776f;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 2px 6px;
+                border-radius: 10px;
+                min-width: 18px;
+                text-align: center;
+            }
+
+            .rank-num.top { background: #b65f4c; }
+            .rank-num.high { background: #c48758; }
+
+            .time-info {
+                color: #8b8277;
+                font-size: 11px;
+            }
+
+            .count-info {
+                color: #059669;
+                font-size: 11px;
+                font-weight: 500;
+            }
+
+            .news-title {
+                font-size: 15px;
+                line-height: 1.55;
+                color: #2f312c;
+                margin: 0;
+            }
+
+            .news-link {
+                color: #36584d;
+                text-decoration: none;
+            }
+
+            .news-link:hover {
+                text-decoration: underline;
+            }
+
+            .news-link:visited {
+                color: #6c665e;
+            }
+
+            /* 通用区域分割线样式 */
+            .section-divider {
+                margin-top: 32px;
+                padding-top: 24px;
+                border-top: 2px solid #e5e7eb;
+            }
+
+            /* 热榜统计区样式 */
+            .hotlist-section {
+                /* 默认无边框，由 section-divider 动态添加 */
+            }
+
+            .new-section {
+                margin-top: 40px;
+                padding-top: 24px;
+            }
+
+            .new-section-title {
+                color: #1a1a1a;
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 20px 0;
+            }
+
+            .new-source-group {
+                margin-bottom: 24px;
+            }
+
+            .new-source-title {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+                margin: 0 0 12px 0;
+                padding-bottom: 6px;
+                border-bottom: 1px solid #f5f5f5;
+            }
+
+            .new-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 8px 0;
+                border-bottom: 1px solid #f9f9f9;
+            }
+
+            .new-item:last-child {
+                border-bottom: none;
+            }
+
+            .new-item-number {
+                color: #999;
+                font-size: 12px;
+                font-weight: 600;
+                min-width: 18px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .new-item-rank {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 8px;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            .new-item-rank.top { background: #dc2626; }
+            .new-item-rank.high { background: #ea580c; }
+
+            .new-item-content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .new-item-title {
+                font-size: 14px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .error-section {
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 24px;
+            }
+
+            .error-title {
+                color: #dc2626;
+                font-size: 14px;
+                font-weight: 600;
+                margin: 0 0 8px 0;
+            }
+
+            .error-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .error-item {
+                color: #991b1b;
+                font-size: 13px;
+                padding: 2px 0;
+                font-family: 'SF Mono', Consolas, monospace;
+            }
+
+            .footer {
+                margin-top: 32px;
+                padding: 20px 24px;
+                background: rgba(247, 241, 231, 0.85);
+                border-top: 1px solid rgba(216, 205, 188, 0.8);
+                text-align: center;
+            }
+
+            .footer-content {
+                font-size: 13px;
+                color: #82786b;
+                line-height: 1.6;
+            }
+
+            .footer-link {
+                color: #4d6a5d;
+                text-decoration: none;
+                font-weight: 500;
+                transition: color 0.2s ease;
+            }
+
+            .footer-link:hover {
+                color: #3f584d;
+                text-decoration: underline;
+            }
+
+            .project-name {
+                font-weight: 600;
+                color: #595348;
+            }
+
+            .dashboard-card-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 14px;
+                border-bottom: 1px solid rgba(219, 209, 192, 0.92);
+            }
+
+            .dashboard-card-title {
+                font-family: 'Noto Serif SC', serif;
+                font-size: 20px;
+                font-weight: 700;
+                color: #2e302b;
+                letter-spacing: 0.01em;
+            }
+
+            .dashboard-card-meta {
+                color: #5c7c6c;
+                background: #edf4ef;
+                font-size: 12px;
+                font-weight: 700;
+                padding: 5px 10px;
+                border-radius: 999px;
+                border: 1px solid rgba(192, 213, 201, 0.72);
+            }
+
+            .rank-explain {
+                margin-bottom: 16px;
+                padding: 12px 14px;
+                border-radius: 16px;
+                background: #f6f2e8;
+                color: #6b5d49;
+                font-size: 12px;
+                line-height: 1.7;
+                border: 1px solid rgba(222, 210, 188, 0.92);
+            }
+
+            .ai-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 16px;
+            }
+
+            .ai-toggle {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                margin-bottom: 16px;
+                padding: 14px 16px;
+                border: 1px solid rgba(220, 209, 190, 0.92);
+                border-radius: 18px;
+                background: #f7f2e8;
+                color: #5f5448;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+            }
+
+            .ai-toggle-note {
+                font-size: 12px;
+                font-weight: 600;
+                color: #807362;
+            }
+
+            .ai-panel.collapsed {
+                display: none;
+            }
+
+            .ai-grid-card {
+                height: 100%;
+                padding: 18px;
+                border-radius: 20px;
+                border: 1px solid rgba(224, 214, 198, 0.92);
+                background: linear-gradient(180deg, rgba(255,255,252,0.98) 0%, rgba(251,248,242,0.94) 100%);
+                box-shadow: 0 10px 24px rgba(116, 99, 74, 0.04);
+            }
+
+            .ai-grid-title {
+                margin-bottom: 10px;
+                font-size: 14px;
+                font-weight: 700;
+                color: #415d51;
+            }
+
+            .ai-grid-content {
+                font-size: 13px;
+                line-height: 1.8;
+                color: #59584f;
+                white-space: pre-wrap;
+            }
+
+            @media (max-width: 1120px) {
+                .header-shell {
+                    grid-template-columns: 1fr;
+                }
+
+                .header-left,
+                .header-right {
+                    max-width: none;
+                    width: 100%;
+                }
+
+                .dashboard-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .ai-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .social-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+
+            @media (max-width: 480px) {
+                body { padding: 12px; }
+                .header { padding: 24px 20px; }
+                .header-shell { gap: 16px; }
+                .content { padding: 16px; }
+                .footer { padding: 16px 20px; }
+                .header-info { grid-template-columns: 1fr; gap: 12px; }
+                .header-title { padding-right: 0; }
+                .filter-card-body { grid-template-columns: 1fr; }
+                .news-header { gap: 6px; }
+                .news-content { padding-right: 45px; }
+                .news-item { gap: 8px; }
+                .new-item { gap: 8px; }
+                .news-number { width: 20px; height: 20px; font-size: 12px; }
+                .dashboard-card { padding: 16px; border-radius: 18px; }
+                .save-buttons {
+                    position: static;
+                    margin-bottom: 16px;
+                    display: flex;
+                    gap: 8px;
+                    justify-content: center;
+                    flex-direction: column;
+                    width: 100%;
+                }
+                .save-btn {
+                    width: 100%;
+                }
+
+                .social-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* RSS 订阅内容样式 */
+            .rss-section {
+                margin-top: 32px;
+                padding-top: 24px;
+            }
+
+            .rss-section-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid #dbe4ee;
+            }
+
+            .rss-section-title {
+                font-family: 'Noto Serif SC', serif;
+                font-size: 20px;
+                font-weight: 700;
+                color: #2e302b;
+                letter-spacing: 0.01em;
+            }
+
+            .rss-section-count {
+                color: #6b7280;
+                font-size: 14px;
+            }
+
+            .feed-group {
+                margin-bottom: 24px;
+            }
+
+            .feed-group:last-child {
+                margin-bottom: 0;
+            }
+
+            .feed-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 12px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid rgba(223, 214, 198, 0.92);
+            }
+
+            .feed-name {
+                font-family: 'Noto Serif SC', serif;
+                font-size: 17px;
+                font-weight: 700;
+                color: #2e302b;
+                letter-spacing: 0.01em;
+            }
+
+            .feed-count {
+                color: #5c7c6c;
+                background: #edf4ef;
+                font-size: 12px;
+                font-weight: 700;
+                padding: 4px 8px;
+                border-radius: 999px;
+                border: 1px solid rgba(192, 213, 201, 0.72);
+            }
+
+            .rss-item {
+                margin-bottom: 12px;
+                padding: 14px;
+                background: linear-gradient(180deg, rgba(255,255,252,0.96) 0%, rgba(251,248,242,0.94) 100%);
+                border-radius: 18px;
+                border: 1px solid rgba(224, 214, 198, 0.92);
+            }
+
+            .rss-item:last-child {
+                margin-bottom: 0;
+            }
+
+            .rss-meta {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 6px;
+                flex-wrap: wrap;
+            }
+
+            .rss-time {
+                color: #857b70;
+                font-size: 12px;
+            }
+
+            .rss-author {
+                color: #47685b;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .rss-title {
+                font-size: 14px;
+                line-height: 1.5;
+                margin-bottom: 6px;
+            }
+
+            .rss-link {
+                color: #1f2937;
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+            .rss-link:hover {
+                color: #059669;
+                text-decoration: underline;
+            }
+
+            .rss-summary {
+                font-size: 13px;
+                color: #6b7280;
+                line-height: 1.5;
+                margin: 0;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            /* 独立展示区样式 - 复用热点词汇统计区样式 */
+            .standalone-section {
+                margin-top: 32px;
+                padding-top: 24px;
+            }
+
+            .standalone-section-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+            }
+
+            .standalone-section-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #059669;
+            }
+
+            .standalone-section-count {
+                color: #6b7280;
+                font-size: 14px;
+            }
+
+            .standalone-group {
+                margin-bottom: 40px;
+            }
+
+            .standalone-group:last-child {
+                margin-bottom: 0;
+            }
+
+            .standalone-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .standalone-name {
+                font-size: 17px;
+                font-weight: 600;
+                color: #1a1a1a;
+            }
+
+            .standalone-count {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            /* AI 分析区块样式 */
+            .ai-section {
+                margin-top: 32px;
+                padding: 0;
+                background: transparent;
+                border-radius: 0;
+                border: none;
+            }
+
+            .ai-section-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid #dbe4ee;
+            }
+
+            .ai-section-title {
+                font-family: 'Noto Serif SC', serif;
+                font-size: 20px;
+                font-weight: 700;
+                color: #2e302b;
+                letter-spacing: 0.01em;
+            }
+
+            .ai-section-badge {
+                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+                color: white;
+                font-size: 11px;
+                font-weight: 700;
+                padding: 4px 9px;
+                border-radius: 999px;
+            }
+
+            .ai-block {
+                margin-bottom: 14px;
+                padding: 16px 18px;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                border-radius: 16px;
+                border: 1px solid #e2e8f0;
+                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+            }
+
+            .ai-block:last-child {
+                margin-bottom: 0;
+            }
+
+            .ai-block-title {
+                font-size: 14px;
+                font-weight: 700;
+                color: #4338ca;
+                margin-bottom: 10px;
+            }
+
+            .ai-block-content {
+                font-size: 13px;
+                line-height: 1.7;
+                color: #334155;
+                white-space: pre-wrap;
+            }
+
+            .ai-error {
+                padding: 16px;
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                color: #991b1b;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body class="pulse-static">
+        <aside class="pulse-static-sidebar">
+            <div class="pulse-static-brand">
+                <div class="pulse-static-title">Pulse Observer</div>
+                <div class="pulse-static-note">Media monitoring dashboard demo</div>
+            </div>
+            <nav class="pulse-static-nav">
+                <a href="#overview" class="is-active">首页概览</a>
+                <a href="#media">媒体观测</a>
+                <a href="#hotlist">热榜监测</a>
+                <a href="#website">网站监测</a>
+                <a href="#ai-insight">AI 洞察</a>
+                <a href="#sources">信源汇总</a>
+            </nav>
+        </aside>
+        <div class="pulse-static-main">
+        <div class="container">
+            <div class="header">
+                <div class="save-buttons">
+                    <button class="save-btn" onclick="saveAsImage()">保存为图片</button>
+                    <button class="save-btn" onclick="saveAsMultipleImages()">分段保存</button>
+                </div>
+                <div class="header-title">Pulse Observer</div>
+                <div class="pulse-static-subtitle">在一个界面里浏览媒体观测、热榜监测、网站监测与 AI 洞察。</div>
+                <div class="header-shell">
+                    <div class="header-left">
+                        <div class="header-info">
+                    <div class="info-item">
+                        <span class="info-label">报告类型</span>
+                        <span class="info-value">全天汇总</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">新闻总数</span>
+                        <span class="info-value">939 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">热点新闻</span>
+                        <span class="info-value">34 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">生成时间</span>
+                        <span class="info-value">03-28 11:06</span>
+                    </div>
+                </div>
+                    </div>
+                    <div class="header-right">
+                        
+                    <div class="filter-card">
+                        <div class="filter-card-header">
+                            <div class="filter-card-title">筛选过程</div>
+                            <div class="filter-card-badge">本轮规则</div>
+                        </div>
+                        <div class="filter-card-body">
+                            <div class="filter-card-block filter-card-block-topics">
+                                <div class="filter-card-label">主题焦点</div>
+                                <div class="filter-topic-list"><div class="filter-topic-item">1. 国际涉华叙事与跨境争议</div><div class="filter-topic-item">2. 港澳台海与周边局势</div><div class="filter-topic-item">3. 宏观经济、地产债务与市场金融争议</div><div class="filter-topic-item">4. 公共安全、事故灾害与突发风险</div><div class="filter-topic-item">5. 社会民生与公共服务争议</div></div>
+                            </div>
+                            <div class="filter-card-block">
+                                <div class="filter-card-label">判定标准</div>
+                                <div class="filter-rule-text">优先保留可能引发公共争议、情绪波动、跨平台传播、持续发酵和涉华叙事升级的内容；弱争议、弱涉华、低信息量内容默认降权过滤。</div>
+                                <div class="filter-metrics">
+                                    <span class="filter-metric">AI 阈值 0.85</span>
+                                    <span class="filter-metric">RSS 1 天内</span>
+                                </div>
+                            </div>
+                            <div class="filter-card-block">
+                                <div class="filter-card-label">执行流程</div>
+                                <div class="filter-step-list"><div class="filter-step-item">1. 全量抓取热榜与重点网站原始内容。</div><div class="filter-step-item">2. 仅围绕涉华争议、风险信号、跨平台扩散议题做 AI 分类。</div><div class="filter-step-item">3. 相关度分数需达到 score ≥ 0.85 才进入最终展示。</div><div class="filter-step-item">4. RSS 仅保留近 1 天内容。</div><div class="filter-step-item">5. 过滤普通通知、常规科普、低信息量奇闻、营销导流和弱涉华内容。</div></div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="dashboard-grid">
+                    <div class="dashboard-column dashboard-column-hotlist"><div class="dashboard-card dashboard-hotlist">
+                <div class="hotlist-section">
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">国际涉华</div>
+                            <div class="word-count warm">5 条</div>
+                        </div>
+                        <div class="word-index">1/9</div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">今日头条</span><span class="rank-num high">5-27</span><span class="time-info">01:31~08:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7621835188808453668/" target="_blank" class="news-link">一中国博士后遭美方盘问后自杀身亡</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">今日头条</span><span class="rank-num top">2-10</span><span class="time-info">07:31~09:31</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7621558385353474054/" target="_blank" class="news-link">欧尔班称中国不可战胜</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">腾讯新闻热点榜</span><span class="rank-num high">5-43</span><span class="time-info">00:02~10:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://view.inews.qq.com/a/20260327A078IR00" target="_blank" class="news-link">遭中国学界集体“拉黑” NeurIPS道歉</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">今日头条</span><span class="rank-num ">22-30</span><span class="time-info">02:31~07:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7621487056196796422/" target="_blank" class="news-link">匈牙利总理：中国不可战胜</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">虎扑步行街热帖</span><span class="rank-num ">10-14</span><span class="time-info">00:02~04:31</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638129517.html" target="_blank" class="news-link">中国小女孩的打车视频在推特上爆火，已经有4900万播放量了，外国网友被颠覆认知后一口咬定这是假的，说中国不可能那么先进。大家觉得呢？</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">港澳台海</div>
+                            <div class="word-count ">4 条</div>
+                        </div>
+                        <div class="word-index">2/9</div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">今日头条</span><span class="rank-num top">2</span><span class="time-info">10:31~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7620809038112280083/" target="_blank" class="news-link">蔡正元入狱前画面曝光：微笑上囚车</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">微信热文榜</span><span class="rank-num ">13-23</span><span class="time-info">00:02~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://mp.weixin.qq.com/s/SOrp2jOouyv_6e0WIHO1qg" target="_blank" class="news-link">台湾民众党前主席柯文哲被判17年</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">腾讯新闻热点榜</span><span class="rank-num ">16-38</span><span class="time-info">00:02~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://view.inews.qq.com/a/20260327A06YAB00" target="_blank" class="news-link">蔡正元入监服刑，柯文哲深夜送别</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">抖音</span><span class="rank-num ">11</span><span class="time-info">00:02</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.douyin.com/hot/2445187" target="_blank" class="news-link">蔡正元今日入狱</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">外交安全</div>
+                            <div class="word-count hot">11 条</div>
+                        </div>
+                        <div class="word-index">3/9</div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">腾讯新闻热点榜</span><span class="rank-num top">2-42</span><span class="time-info">00:02~10:31</span>
+                            </div>
+                            <div class="news-title"><a href="https://view.inews.qq.com/a/20260327A05H6W00" target="_blank" class="news-link">商务部对美国发起贸易壁垒调查</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">抖音</span><span class="rank-num high">4-10</span><span class="time-info">00:02~10:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.douyin.com/hot/2445780" target="_blank" class="news-link">中方对美发起两项贸易壁垒调查</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">今日头条</span><span class="rank-num ">25-28</span><span class="time-info">04:01~05:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7620992354468380715/" target="_blank" class="news-link">媒体：闯中使馆日本人绝非凭空冒出来</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">今日头条</span><span class="rank-num ">20</span><span class="time-info">07:31</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7621392284403712042/" target="_blank" class="news-link">外交部：日方表示遗憾远远不够</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">抖音</span><span class="rank-num high">5-15</span><span class="time-info">00:02~10:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.douyin.com/hot/2445642" target="_blank" class="news-link">新华社六问强闯我驻日使馆事件</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">bilibili 热搜</span><span class="rank-num ">27-29</span><span class="time-info">09:01~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://search.bilibili.com/all?keyword=%E6%97%A5%E6%9C%AC%E7%94%B7%E5%AD%90%E6%8C%81%E5%88%80%E5%BC%BA%E9%97%AF%E6%88%91%E4%BD%BF%E9%A6%86%E7%BB%86%E8%8A%82%E6%8A%AB%E9%9C%B2" target="_blank" class="news-link">日本男子持刀强闯我使馆细节披露</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">腾讯新闻热点榜</span><span class="rank-num ">36-50</span><span class="time-info">00:02~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://view.inews.qq.com/a/20260327A05BAQ00" target="_blank" class="news-link">外交部回击“美指控中方惩罚巴拿马”</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">财联社热门</span><span class="rank-num top">1</span><span class="time-info">00:02~01:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.cls.cn/detail/2326937" target="_blank" class="news-link">中方对美方启动两项贸易壁垒调查，商务部答问</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">9</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">微信热文榜</span><span class="rank-num top">3</span><span class="time-info">00:02~00:31</span>
+                            </div>
+                            <div class="news-title"><a href="https://mp.weixin.qq.com/s/KASIAql57yE8_njMtAFMBA" target="_blank" class="news-link">中国博士后遭美方约谈盘问后自杀，外交部表态</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">10</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">腾讯新闻热点榜</span><span class="rank-num ">8-33</span><span class="time-info">00:02~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://view.inews.qq.com/a/20260327A0588N00" target="_blank" class="news-link">中方敦促美方彻查中国博士后身亡案</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">11</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">腾讯新闻热点榜</span><span class="rank-num ">28-50</span><span class="time-info">00:02~07:31</span>
+                            </div>
+                            <div class="news-title"><a href="https://view.inews.qq.com/a/20260327A03Z0E00" target="_blank" class="news-link">六问日本当局</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">周边局势</div>
+                            <div class="word-count ">2 条</div>
+                        </div>
+                        <div class="word-index">4/9</div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">今日头条</span><span class="rank-num ">9-29</span><span class="time-info">08:01~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7622000667011366931/" target="_blank" class="news-link">菲军舰危险接近中方 南部战区发声</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">微博</span><span class="rank-num top">1-23</span><span class="time-info">08:01~10:31</span>
+                            </div>
+                            <div class="news-title"><a href="https://s.weibo.com/weibo?q=%23%E8%8F%B2%E8%88%B0%E4%B8%8D%E9%A1%BE%E4%B8%AD%E6%96%B9%E5%8F%8D%E5%A4%8D%E5%96%8A%E8%AF%9D%E6%8F%90%E9%86%92%23" target="_blank" class="news-link">菲舰不顾中方反复喊话提醒</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">公共安全</div>
+                            <div class="word-count ">3 条</div>
+                        </div>
+                        <div class="word-index">5/9</div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">今日头条</span><span class="rank-num ">29</span><span class="time-info">07:31</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7621874460026732582/" target="_blank" class="news-link">山东“5·27”重大爆炸事故原因公布</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">腾讯新闻热点榜</span><span class="rank-num ">45-47</span><span class="time-info">08:31~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://view.inews.qq.com/a/20260327A054DM00" target="_blank" class="news-link">湖北一汽车撞上火车 惊险瞬间曝光</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">微信热文榜</span><span class="rank-num high">5-8</span><span class="time-info">00:02~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://mp.weixin.qq.com/s/FFCLRXb4ZuJ6ArleqiQ41w" target="_blank" class="news-link">官方通报湖南郴州烟花店燃爆事件：燃爆系经营者彭某勇所为，在实施犯罪后自杀，该案共造成3人受伤，13名公职人员被处理</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">民生争议</div>
+                            <div class="word-count warm">5 条</div>
+                        </div>
+                        <div class="word-index">6/9</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">贴吧</span><span class="rank-num ">7</span><span class="time-info">11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://tieba.baidu.com/hottopic/browse/hottopic?amp%3Btopic_name=%E4%BB%B0%E6%9C%9B%E8%BF%AD%E4%BB%A3%E5%89%B2%E9%9F%AD%E8%8F%9C%2C%E8%BD%A6%E4%B8%BB%E6%8A%B1%E5%9B%A2%E7%BB%B4%E6%9D%83&amp;topic_id=28352445" target="_blank" class="news-link">仰望迭代割韭菜,车主抱团维权</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">百度热搜</span><span class="rank-num high">4-30</span><span class="time-info">04:01~08:31</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E7%BD%91%E5%8F%8B%E9%A2%84%E8%AE%A2%E9%85%92%E5%BA%97%E5%A4%B1%E8%B4%A5+%E5%86%8D%E4%B8%8B%E5%8D%95%E4%BB%B7%E6%A0%BC%E6%B6%A810%E5%80%8D" target="_blank" class="news-link">网友预订酒店失败 再下单价格涨10倍</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">今日头条</span><span class="rank-num ">13-28</span><span class="time-info">10:31~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7622098341958012425/" target="_blank" class="news-link">把消费者当“狗” 罗技怎么敢的</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">微信热文榜</span><span class="rank-num high">4-7</span><span class="time-info">00:02~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://mp.weixin.qq.com/s/l8A-uankOSYhF7WjjPmNqA" target="_blank" class="news-link">顶流品牌罗技侮辱中国消费者像狗！晋江文学城被女会员狂冲！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">腾讯新闻热点榜</span><span class="rank-num ">20-34</span><span class="time-info">00:02~07:31</span>
+                            </div>
+                            <div class="news-title"><a href="https://view.inews.qq.com/a/20260327A03XI000" target="_blank" class="news-link">女子医院生产 与新生儿双双离世</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">科技治理</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">7/9</div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">微博</span><span class="rank-num ">19-30</span><span class="time-info">08:31~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://s.weibo.com/weibo?q=%23%E9%B8%BF%E8%92%99%E6%99%BA%E8%A1%8C%E8%BD%A6%E8%BE%86%E6%99%BA%E9%A9%BE%E7%8A%B6%E6%80%81%E4%B8%8B%E5%86%B2%E6%92%9E%E5%B9%BC%E7%AB%A5%23" target="_blank" class="news-link">鸿蒙智行车辆智驾状态下冲撞幼童</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">地产债务</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">8/9</div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">知乎</span><span class="rank-num high">4-9</span><span class="time-info">02:31~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zhihu.com/question/2020569609481270685" target="_blank" class="news-link">网传万科所有核心高管被要求退还薪酬，是真的吗？</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">市场金融</div>
+                            <div class="word-count ">2 条</div>
+                        </div>
+                        <div class="word-index">9/9</div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">微博</span><span class="rank-num ">22-28</span><span class="time-info">04:31~07:31</span>
+                            </div>
+                            <div class="news-title"><a href="https://s.weibo.com/weibo?q=%23%E9%BB%84%E9%87%91%E6%8C%81%E7%BB%AD%E5%BF%AB%E9%80%9F%E6%8B%89%E5%8D%87%23" target="_blank" class="news-link">黄金持续快速拉升</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item ">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header"><span class="source-name">知乎</span><span class="rank-num ">14-18</span><span class="time-info">10:01~11:01</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zhihu.com/question/2020984478156239784" target="_blank" class="news-link">比亚迪 2025 财报显示年营收 8040 亿元，净利 326 亿元，如何评价这一数据？</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div></div></div>
+                    <div class="dashboard-column dashboard-column-rss"><div class="dashboard-card dashboard-rss">
+                <div class="rss-section">
+                    <div class="rss-section-header">
+                        <div class="rss-section-title">RSS 订阅更新</div>
+                        <div class="rss-section-count">18 条</div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">国际涉华</div>
+                            <div class="feed-count">2 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-27 16:46</span><span class="rss-author">联合早报涉华</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.zaobao.com/news/china/story20260327-8802070" target="_blank" class="rss-link">中国博士后遭美方约谈盘问后自杀身亡 中方促美方彻查</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-27 23:46</span><span class="rss-author">联合早报涉华</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.zaobao.com/news/china/story20260327-8804381" target="_blank" class="rss-link">毛振华：中国经济“冰火两重天” 扩内需是难题</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">港澳台海</div>
+                            <div class="feed-count">2 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-28 09:53</span><span class="rss-author">联合早报涉华</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.zaobao.com/news/china/story20260328-8805121" target="_blank" class="rss-link">美国在台协会处长：稳定美陆关系不必牺牲台湾</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-27 15:53</span><span class="rss-author">联合早报涉华</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.zaobao.com/news/china/story20260327-8801557" target="_blank" class="rss-link">美智库：中国在台海附近部署“退役战机改装无人机”</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">外交安全</div>
+                            <div class="feed-count">10 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-27 16:21</span><span class="rss-author">联合早报涉华</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.zaobao.com/news/china/story20260327-8801871" target="_blank" class="rss-link">中国对美国发起两项贸易壁垒调查</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-author">美联社国际</span>
+                            </div>
+                            <div class="rss-title"><a href="https://apnews.com/article/japan-china-embassy-break-681e907aa1ff18862aa29f425d994734" target="_blank" class="rss-link">日本士兵因涉嫌闯入中国使馆被捕后，日本向中国表示遗憾</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-27 21:20</span><span class="rss-author">联合早报涉华</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.zaobao.com/news/china/story20260327-8803394" target="_blank" class="rss-link">中国商务部长会见美国贸易代表：严正关切美国发起的301调查</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-author">美联社国际</span>
+                            </div>
+                            <div class="rss-title"><a href="https://apnews.com/article/china-us-trade-investigation-trump-tariff-52e6741f5e0a25cac971da0a07d001e4" target="_blank" class="rss-link">针对特朗普关税举措，中国对美国贸易做法展开调查</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-27 18:08</span><span class="rss-author">联合早报涉华</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.zaobao.com/news/china/story20260327-8800587" target="_blank" class="rss-link">中国官媒就日本自卫官闯中使馆事件六问日本当局</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-27 16:32</span><span class="rss-author">观察者网</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.guancha.cn/internation/2026_03_27_811648_s.shtml" target="_blank" class="rss-link">中方对美启动两项贸易壁垒调查</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-27 14:36</span><span class="rss-author">联合早报涉华</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.zaobao.com/news/china/story20260327-8801030" target="_blank" class="rss-link">日防长为日本自卫官闯入中国驻日使馆被捕表达遗憾</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-author">美联社国际</span>
+                            </div>
+                            <div class="rss-title"><a href="https://apnews.com/article/trump-china-trip-iran-war-401c4c33a01b2acce72e96eb8058f8cc" target="_blank" class="rss-link">在因伊朗战争推迟后，特朗普将于5月14日至15日赴北京进行重新安排的中国之行</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-27 14:35</span><span class="rss-author">联合早报涉华</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.zaobao.com/news/china/story20260327-8800492" target="_blank" class="rss-link">中国批评捷克参议院通过有关达赖喇嘛的决议</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-28 09:11</span><span class="rss-author">联合早报涉华</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.zaobao.com/news/china/story20260328-8805015" target="_blank" class="rss-link">王毅：中国愿同巴基斯坦共同促和止战</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">周边局势</div>
+                            <div class="feed-count">2 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-28 10:35</span><span class="rss-author">联合早报涉华</span><span class="rss-author" style="color: #dc2626;">NEW</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.zaobao.com/news/china/story20260328-8805243" target="_blank" class="rss-link">菲军舰渚碧礁危险接近中国军舰 南部战区：停止挑衅</a>
+                            </div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-28 07:19</span><span class="rss-author">观察者网</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.guancha.cn/internation/2026_03_28_811689_s.shtml" target="_blank" class="rss-link">菲舰不顾中方反复喊话，蓄意危险接近我军舰，视频公布</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">公共安全</div>
+                            <div class="feed-count">1 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-27 13:10</span><span class="rss-author">联合早报涉华</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.zaobao.com/news/china/story20260327-8800452" target="_blank" class="rss-link">湖南郴州烟花店燃爆事件 13名公职人员被处理</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-group">
+                        <div class="feed-header">
+                            <div class="feed-name">科技治理</div>
+                            <div class="feed-count">1 条</div>
+                        </div>
+                        <div class="rss-item">
+                            <div class="rss-meta"><span class="rss-time">03-27 23:33</span><span class="rss-author">观察者网</span>
+                            </div>
+                            <div class="rss-title"><a href="https://www.guancha.cn/internation/2026_03_27_811687_s.shtml" target="_blank" class="rss-link">遭中国学界“拉黑”后，这家AI顶会低头道歉</a>
+                            </div>
+                        </div>
+                    </div>
+                </div></div></div>
+                </div>
+                <div class="section-divider social-section">
+                    <div class="rss-section-header">
+                        <div class="rss-section-title">社交媒体观察</div>
+                        <div class="rss-section-count">10 条</div>
+                    </div>
+            <div class="social-sources">观察来源：Reddit 观察名单、X 观察名单。 平台：Reddit / X。</div><div class="social-grid">
+                    <div class="rss-item social-item">
+                        <div class="news-content">
+                            <div class="rss-meta social-meta-line">
+                                <span class="social-platform">REDDIT</span>
+                                <span class="rss-author social-author">/u/Complete-Pirate9488</span>
+                                <span class="social-time">2026-03-27T03:39:05</span>
+                            </div>
+                            <a href="https://www.reddit.com/r/China_irl/comments/1s4t98n/美军中央司令部被放置炸弹一名嫌疑人目前在中国/" target="_blank" class="social-text-link"><div class="social-excerpt">20岁的阿伦·郑（张艾伦）于3月10日在麦克迪尔空军基地（美军中央司令部所在地）戴尔·马布里门附近的访客中心外放置了简易爆炸装置。之后，他拨打911报警电话通报“炸弹威胁”，但基地最初搜查未发现装置。约在3月11日，两人卖掉了涉案奔驰运动型多用途车（在卡麦克斯），并购买机票，于3月12日飞往中国。3月16日，当局在基地外找到该可疑包裹（简易爆炸装置），并送往联邦调查局实验室检验。3月26日，联邦检察官公布了对两人的起诉书。阿伦·郑被控企图破坏政府财产、非法制造和持有破坏性装置等罪名（最高可判40年），目前人在中国；其姐姐安·玛丽·郑（张安妮，27岁）被控事后从犯和妨碍证人等罪名，目前已被捕入狱。两人均为美国公民，居住在佛罗里达州兰德奥莱克斯地区。调查显示，他们在事件后迅速清理车辆并逃离，但通过手机数据、监控视频和车辆残留证据被锁定。目前没有证据显示此事与外国政府（如中国政府）直接有关，动机仍在调查中（基地因中东局势处于高度警戒状态）。由用户完全海盗提交……</div></a>
+                        </div>
+                    </div>
+                
+                    <div class="rss-item social-item">
+                        <div class="news-content">
+                            <div class="rss-meta social-meta-line">
+                                <span class="social-platform">REDDIT</span>
+                                <span class="rss-author social-author">/u/Brave-Experience3228</span>
+                                <span class="social-time">2026-03-27T03:16:37</span>
+                            </div>
+                            <a href="https://www.reddit.com/r/China_irl/comments/1s4ssd1/你坐的网约车为什么味道很大/" target="_blank" class="social-text-link"><div class="social-excerpt">由用户勇敢体验三二二八提交［链接］［评论］</div></a>
+                        </div>
+                    </div>
+                
+                    <div class="rss-item social-item">
+                        <div class="news-content">
+                            <div class="rss-meta social-meta-line">
+                                <span class="social-platform">REDDIT</span>
+                                <span class="rss-author social-author">/u/FongSE</span>
+                                <span class="social-time">2026-03-27T02:51:04</span>
+                            </div>
+                            <a href="https://www.reddit.com/r/China_irl/comments/1s4s7yz/池袋宝可梦中心现命案日一推民称凶手为中国人揽获一万点赞转发后证实凶手被害人均为日本人/" target="_blank" class="social-text-link"><div class="social-excerpt">3月26日，日本池袋一处商品市场的宝可梦中心发生凶杀案。一名男子持刀翻进柜台，用刀刺入该宝可梦中心一名女性店员颈部将其杀害后随即自杀。现场视频迅速在日本网络上传播并发酵，随后网上便出现流言，称本案当众行凶的凶手为中国人。推特上一日本账号称其当时正好在现场购物，目击了事件的完整经过。根据其推文描述，凶手是一名中国黄牛，因同时购入大量相同商品被店员规劝后发作，暴起杀害了该名店员。该账号在推文末尾表达了对中国人的批判。然而随后的媒体报道很快证实，凶手和被害人均为日本人。共同社在后续报道中提到，在东京池袋商品市场“阳光城”发生的女性遭男子刺杀身亡事件中，警视厅于27日公布了相关身份信息：涉案男子为住所及职业不详的广川大起（26岁），被害人为居住在东京都八王子市的兼职人员春川萌衣（21岁）。目前，称事件凶手为中国人的推文因涉嫌违反推特有关仇恨行为的规定，已被限制可见性。由用户方社提交［链接］［评论］</div></a>
+                        </div>
+                    </div>
+                
+                    <div class="rss-item social-item">
+                        <div class="news-content">
+                            <div class="rss-meta social-meta-line">
+                                <span class="social-platform">REDDIT</span>
+                                <span class="rss-author social-author">/u/China_in_real_life</span>
+                                <span class="social-time">2026-03-27T02:00:57</span>
+                            </div>
+                            <a href="https://www.reddit.com/r/China_irl/comments/1s4r3rx/张雪峰追悼会将于星期六举行/" target="_blank" class="social-text-link"><div class="social-excerpt">由用户现实中的中国提交［链接］［评论］</div></a>
+                        </div>
+                    </div>
+                
+                    <div class="rss-item social-item">
+                        <div class="news-content">
+                            <div class="rss-meta social-meta-line">
+                                <span class="social-platform">REDDIT</span>
+                                <span class="rss-author social-author">/u/Asleep-Dark743</span>
+                                <span class="social-time">2026-03-27T01:26:19</span>
+                            </div>
+                            <a href="https://www.reddit.com/r/China_irl/comments/1s4qbr6/日本极右翼这么恐怖吗/" target="_blank" class="social-text-link"><div class="social-excerpt">由用户沉睡黑暗七四三提交［链接］［评论］</div></a>
+                        </div>
+                    </div>
+                
+                    <div class="rss-item social-item">
+                        <div class="news-content">
+                            <div class="rss-meta social-meta-line">
+                                <span class="social-platform">REDDIT</span>
+                                <span class="rss-author social-author">/u/Accurate_Block918</span>
+                                <span class="social-time">2026-03-27T00:22:24</span>
+                            </div>
+                            <a href="https://www.reddit.com/r/China_irl/comments/1s4ov21/美国总统川普我们在委内瑞拉军事行动投入的钱已经赚回来了赚回好几倍我在委内瑞拉支持率很高卸任美国总统之/" target="_blank" class="social-text-link"><div class="social-excerpt">美国总统特朗普：我们在委内瑞拉军事行动投入的钱已经赚回来了，而且赚了好几倍。我在委内瑞拉支持率很高，卸任美国总统之后要去委内瑞拉竞选总统，和德尔西竞争。由用户精准板块九一八提交［链接］［评论］</div></a>
+                        </div>
+                    </div>
+                
+                    <div class="rss-item social-item">
+                        <div class="news-content">
+                            <div class="rss-meta social-meta-line">
+                                <span class="social-platform">REDDIT</span>
+                                <span class="rss-author social-author">/u/yixiwangu</span>
+                                <span class="social-time">2026-03-26T17:09:46</span>
+                            </div>
+                            <a href="https://www.reddit.com/r/China_irl/comments/1s4dgrg/manus高管被边控这事让我感到张爱玲被严重低估了去年官媒都特意出了时评对manus直接贴脸嘲讽了高/" target="_blank" class="social-text-link"><div class="social-excerpt">根据“李老师不是你老师”那边保存的资料，至少在去年玛努斯刚刚润出国的时候，官媒就专门发了时评，严正批评这种行为。当时玛努斯不但把中国境内的团队全部裁掉，而且公司官网还屏蔽中国境内网络地址访问，连玛努斯在国内的社交账号也全部清空了，可以说是相当完美地金蝉脱壳，也相当于是和国内彻底撕破脸了。没想到不到半年就来了一个大反转，高管竟然被中共以“开会”的名义骗回了国，然后就被边控出不去了。难以想象这会是一件发生在2026年、发生在有国际互联网、发生在已经润出国的高学历创业者身上的事。当年张爱玲在1951年，在没有国际互联网、只有中共铺天盖地的“新中国”宣传、没有肉身出国、没有护照，甚至已经被中共吸收进体制内、能以作家身份参加文代会的前提下，仅凭一件“穿不穿旗袍”的小事，就能判断出此地不宜久留，然后没过多久就应润尽润，在海外没有任何照应的情况下，孤身一人毅然决然去了美国。再次感到张爱玲的水平被严重低估了。如果是张爱玲碰上玛努斯高管这样的事，她肯定连新加坡和香港都不敢再待，立刻提桶跑路去美国了。无论什么亲人来劝，无论中共再说什么甜言蜜语、给出什么承诺，她都不会相信，不会回国。还有，根据米……</div></a>
+                        </div>
+                    </div>
+                
+                    <div class="rss-item social-item">
+                        <div class="news-content">
+                            <div class="rss-meta social-meta-line">
+                                <span class="social-platform">REDDIT</span>
+                                <span class="rss-author social-author">/u/Beneficial_Sleep1926</span>
+                                <span class="social-time">2026-03-26T04:07:54</span>
+                            </div>
+                            <a href="https://www.reddit.com/r/China_irl/comments/1s3xat4/张雪峰老师不幸离世提醒我们大家要关注的不是心脏/" target="_blank" class="social-text-link"><div class="social-excerpt">张雪峰老师不幸离世的消息令人心痛！张老师是在中午跑步之后突发心肌梗死，虽经3小时全力抢救，仍无力回天，不幸离世。看到对这一令人惋惜事件的大量评论，主要有两个误区。一个是大家都把责任归咎于跑步，认为跑步太剧烈，完全是在伤害身体。比如每次马拉松比赛都有多人倒地不起，甚至有人遇难。另一个误区，就是大家都认为心肌梗死就是心脏不行了，心脏承受不了马拉松这类剧烈运动。其实，大部分心肌梗死并不是心脏本身出了问题，而是给心脏供血的冠状动脉，也就是血管出了问题。几乎所有运动都会强健我们的身体，特别是心脏，但是却无法使我们的血管变强壮。血管最里面有一层薄薄的内皮，当我们身体有炎症的时候，或者受到血液的强力冲击（比如高血压、情绪激动等），血管内皮容易形成损伤破口，低密度胆固醇由此得以进入并在内皮下面堆积形成斑块。这种伤害不断反复，斑块形成并不断增大，这是一个慢性的长期过程。再加上血管具有弹性，心脏自身具有调节功能（血流速度不够会自动加压），所以即使血管被斑块堵得很厉害了，依然能保持血流挤过斑块堵住的地方，因此几乎没有任何感觉。当血管有破口的时候，那些不稳定的斑块受血流冲击，就可能从破口处脱落……</div></a>
+                        </div>
+                    </div>
+                
+                    <div class="rss-item social-item">
+                        <div class="news-content">
+                            <div class="rss-meta social-meta-line">
+                                <span class="social-platform">X</span>
+                                <span class="rss-author social-author">@whyyoutouzhele</span>
+                                <span class="social-time">2026-03-26T03:20:00Z</span>
+                            </div>
+                            <a href="https://x.com/whyyoutouzhele/status/2037006626683838801" target="_blank" class="social-text-link"><div class="social-excerpt">3月26日，辽宁盘锦。一名大货车司机抱怨“北斗系统”：开4小时不休息罚款、吃东西罚款、打电话罚款、喝水抽烟罚款，说是为你好，实际上就是用来罚款的。安装系统还需要花2000块，司机等于花钱雇人监视自己、处罚自己。链接</div></a>
+                        </div>
+                    </div>
+                
+                    <div class="rss-item social-item">
+                        <div class="news-content">
+                            <div class="rss-meta social-meta-line">
+                                <span class="social-platform">X</span>
+                                <span class="rss-author social-author">@fangshimin</span>
+                                <span class="social-time">2026-03-26T03:09:09Z</span>
+                            </div>
+                            <a href="https://x.com/fangshimin/status/2037003896732999969" target="_blank" class="social-text-link"><div class="social-excerpt">今日所见野花：圣地亚哥金星花、华丽蝴蝶百合、南方棋盘花、优雅猫头鹰火焰草。链接</div></a>
+                        </div>
+                    </div>
+                </div></div>
+            </div>
+
+            <div class="footer">
+                <div class="footer-content">
+                    由 <span class="project-name">TrendRadar</span> 生成 ·
+                    <a href="https://github.com/sansan0/TrendRadar" target="_blank" class="footer-link">
+                        GitHub 开源项目
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const content = document.querySelector('.content');
+                const hotlist = content?.querySelector('.hotlist-section');
+                const rss = content?.querySelector('.rss-section');
+                const ai = content?.querySelector('.ai-section');
+                const social = content?.querySelector('.social-section');
+                const originalGrid = content?.querySelector('.dashboard-grid');
+
+                const sourceMap = {
+                    'Zaobao China': '联合早报涉华',
+                    'Zaobao World': '联合早报国际',
+                    'NYT China RSS': '纽约时报涉华',
+                    'RFI China': '法广涉华',
+                    'SCMP China': '南华早报涉华',
+                    'Guancha All': '观察者网',
+                    'Financial Times China': '金融时报涉华',
+                    'BBC': 'BBC 英文网',
+                    'BBC World': 'BBC 国际',
+                    'AP Politics': '美联社政治',
+                    'AP World News': '美联社国际',
+                    'NPR World': 'NPR 国际',
+                    'The Guardian China': '卫报涉华',
+                    'VOA Chinese 1': '新闻 - 美国之音',
+                    'VOA Chinese 2': '港澳 - 美国之音',
+                    'VOA Chinese 3': '台湾 - 美国之音',
+                    'iNewsweek Politics': '新闻周刊政治',
+                    'iNewsweek World': '新闻周刊国际',
+                    'Infzm': '南方周末'
+                };
+
+                document.querySelectorAll('.rss-author').forEach((el) => {
+                    const text = el.textContent.trim();
+                    if (sourceMap[text]) el.textContent = sourceMap[text];
+                });
+
+                if (social) {
+                    const socialSources = social.querySelector('.social-sources');
+                    if (socialSources) {
+                        socialSources.textContent = socialSources.textContent
+                            .replace('观察来源', '信源')
+                            .replace('瑙傚療鏉ユ簮', '信源');
+                    }
+
+                    social.querySelectorAll('.social-platform').forEach((el) => {
+                        const platform = el.textContent.trim().toUpperCase();
+                        if (platform === 'REDDIT') {
+                            el.textContent = '红迪';
+                        } else if (platform === 'SOCIAL') {
+                            el.textContent = '社媒';
+                        } else if (platform === 'X') {
+                            el.textContent = 'X';
+                        }
+                    });
+                }
+
+                const initSocialPagination = (socialSection) => {
+                    if (!socialSection) return;
+                    const cards = Array.from(socialSection.querySelectorAll('.social-item'));
+                    if (!cards.length) return;
+
+                    const perPage = 4;
+                    const totalPages = Math.max(1, Math.ceil(cards.length / perPage));
+
+                    let pager = socialSection.querySelector('.social-pagination');
+                    if (!pager) {
+                        pager = document.createElement('div');
+                        pager.className = 'social-pagination';
+                        pager.innerHTML = `
+                            <button type="button" class="social-page-btn" data-social-action="prev">上一批</button>
+                            <span class="social-page-indicator">第 1 / 1 页</span>
+                            <button type="button" class="social-page-btn" data-social-action="next">下一批</button>
+                        `;
+                        socialSection.appendChild(pager);
+                    }
+
+                    const prevBtn = pager.querySelector('[data-social-action="prev"]');
+                    const nextBtn = pager.querySelector('[data-social-action="next"]');
+                    const indicator = pager.querySelector('.social-page-indicator');
+                    let currentPage = 1;
+
+                    const renderPage = () => {
+                        cards.forEach((card, idx) => {
+                            const page = Math.floor(idx / perPage) + 1;
+                            card.style.display = page === currentPage ? 'flex' : 'none';
+                        });
+
+                        if (indicator) {
+                            indicator.textContent = `第 ${currentPage} / ${totalPages} 页`;
+                        }
+                        if (prevBtn) prevBtn.disabled = currentPage <= 1;
+                        if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+                        pager.style.display = totalPages > 1 ? 'flex' : 'none';
+                    };
+
+                    if (prevBtn) {
+                        prevBtn.addEventListener('click', () => {
+                            if (currentPage > 1) {
+                                currentPage -= 1;
+                                renderPage();
+                            }
+                        });
+                    }
+                    if (nextBtn) {
+                        nextBtn.addEventListener('click', () => {
+                            if (currentPage < totalPages) {
+                                currentPage += 1;
+                                renderPage();
+                            }
+                        });
+                    }
+
+                    renderPage();
+                };
+
+                if (!(content && hotlist && rss && ai)) return;
+
+                const economicTopics = ['宏观经济', '地产债务', '市场金融', '外贸供应链', '能源商品'];
+                const priorityTopics = ['国际涉华', '港澳台海'];
+                const reorderTopics = (container, selector, nameSelector, indexSelector) => {
+                    const groups = Array.from(container.querySelectorAll(selector));
+                    const priorityGroups = priorityTopics
+                        .map((topic) => groups.find((group) => {
+                            const name = group.querySelector(nameSelector)?.textContent.trim() || '';
+                            return name === topic;
+                        }))
+                        .filter(Boolean);
+                    const middleGroups = groups.filter((group) => {
+                        const name = group.querySelector(nameSelector)?.textContent.trim() || '';
+                        return !priorityTopics.includes(name) && !economicTopics.includes(name);
+                    });
+                    const deferredGroups = groups.filter((group) => {
+                        const name = group.querySelector(nameSelector)?.textContent.trim() || '';
+                        return economicTopics.includes(name);
+                    });
+                    [...priorityGroups, ...middleGroups, ...deferredGroups].forEach((group) => container.appendChild(group));
+                    const reordered = Array.from(container.querySelectorAll(selector));
+                    reordered.forEach((group, index) => {
+                        if (indexSelector) {
+                            const indexEl = group.querySelector(indexSelector);
+                            if (indexEl) indexEl.textContent = `${index + 1}/${reordered.length}`;
+                        }
+                    });
+                    return reordered;
+                };
+
+                const reorderedGroups = reorderTopics(hotlist, '.word-group', '.word-name', '.word-index');
+                reorderTopics(rss, '.feed-group', '.feed-name', null);
+                const hotlistTotalCount = hotlist.querySelectorAll('.news-item').length;
+
+                reorderedGroups.forEach((group) => {
+                    const header = group.querySelector('.word-header');
+                    const info = group.querySelector('.word-info');
+                    const count = group.querySelector('.word-count');
+                    const indexEl = group.querySelector('.word-index');
+                    if (indexEl) indexEl.remove();
+                    if (header && info && count) {
+                        header.style.justifyContent = 'space-between';
+                        header.appendChild(count);
+                    }
+                });
+
+                hotlist.querySelectorAll('.rank-num').forEach((el) => {
+                    const text = el.textContent.trim();
+                    if (text.includes('-')) {
+                        const [start, end] = text.split('-');
+                        el.textContent = `排名 ${start}-${end}`;
+                        el.title = '表示该话题在监测时段内位于该平台热榜的排名区间，数字越小越靠前';
+                    } else if (text) {
+                        el.textContent = `排名 ${text}`;
+                        el.title = '表示该话题在该平台热榜的最高排名，数字越小越靠前';
+                    }
+                });
+
+                hotlist.querySelectorAll('.news-item').forEach((item) => {
+                    item.style.display = 'grid';
+                    item.style.gridTemplateColumns = '28px minmax(0, 1fr)';
+                    item.style.alignItems = 'flex-start';
+                    item.style.gap = '12px';
+                    item.style.padding = '14px';
+                    item.style.marginBottom = '12px';
+                    item.style.border = '1px solid #e2e8f0';
+                    item.style.borderRadius = '14px';
+                    item.style.background = 'linear-gradient(180deg, #f8fafc 0%, #ffffff 100%)';
+                    item.style.overflow = 'visible';
+                    item.style.borderBottom = '1px solid #e2e8f0';
+                });
+
+                hotlist.querySelectorAll('.news-number').forEach((el) => {
+                    el.style.marginTop = '0';
+                    el.style.alignSelf = 'start';
+                });
+
+                hotlist.querySelectorAll('.news-content').forEach((el) => {
+                    el.style.paddingRight = '0';
+                    el.style.minWidth = '0';
+                });
+
+                hotlist.querySelectorAll('.news-item.new .news-content').forEach((el) => {
+                    el.style.paddingRight = '28px';
+                });
+
+                hotlist.querySelectorAll('.news-title').forEach((el) => {
+                    el.style.lineHeight = '1.55';
+                    el.style.overflow = 'visible';
+                    el.style.wordBreak = 'break-word';
+                });
+
+                hotlist.querySelectorAll('.news-link').forEach((el) => {
+                    el.style.display = 'block';
+                });
+
+                const blockMap = {};
+                ai.querySelectorAll('.ai-block').forEach((block) => {
+                    const title = block.querySelector('.ai-block-title')?.textContent.trim();
+                    const html = block.querySelector('.ai-block-content')?.innerHTML || '';
+                    if (title) blockMap[title] = html;
+                });
+
+                const aiHeader = ai.querySelector('.ai-section-header');
+                ai.innerHTML = '';
+                if (aiHeader) {
+                    const titleEl = aiHeader.querySelector('.ai-section-title');
+                    if (titleEl) titleEl.textContent = 'AI 分析研判';
+                    ai.appendChild(aiHeader);
+                }
+
+                const aiToggle = document.createElement('button');
+                aiToggle.type = 'button';
+                aiToggle.className = 'ai-toggle';
+                aiToggle.innerHTML = `
+                    <span>点击展开 AI 分析</span>
+                    <span class="ai-toggle-note">展开 / 收起</span>`;
+                ai.appendChild(aiToggle);
+
+                const aiGrid = document.createElement('div');
+                aiGrid.className = 'ai-grid ai-panel collapsed';
+                aiGrid.innerHTML = `
+                    <div class="ai-grid-card">
+                        <div class="ai-grid-title">主线议题</div>
+                        <div class="ai-grid-content">${blockMap['核心热点态势'] || '暂无显著信号'}</div>
+                    </div>
+                    <div class="ai-grid-card">
+                        <div class="ai-grid-title">传播观察</div>
+                        <div class="ai-grid-content">${[blockMap['舆论风向争议'], blockMap['异动与弱信号']].filter(Boolean).join('<br><br>') || '暂无显著信号'}</div>
+                    </div>
+                    <div class="ai-grid-card">
+                        <div class="ai-grid-title">后续跟踪</div>
+                        <div class="ai-grid-content">${[blockMap['研判策略建议'], blockMap['RSS 深度洞察']].filter(Boolean).join('<br><br>') || '暂无显著信号'}</div>
+                    </div>`;
+                ai.appendChild(aiGrid);
+
+                aiToggle.addEventListener('click', () => {
+                    aiGrid.classList.toggle('collapsed');
+                    aiToggle.querySelector('span').textContent = aiGrid.classList.contains('collapsed')
+                        ? '点击展开 AI 分析'
+                        : '点击收起 AI 分析';
+                });
+
+                const aiCard = document.createElement('div');
+                aiCard.className = 'dashboard-card dashboard-ai';
+                aiCard.appendChild(ai);
+                content.prepend(aiCard);
+
+                if (social) {
+                    const socialCard = document.createElement('div');
+                    socialCard.className = 'dashboard-card dashboard-social';
+                    socialCard.appendChild(social);
+                    aiCard.insertAdjacentElement('afterend', socialCard);
+                    initSocialPagination(social);
+                }
+
+                const grid = document.createElement('div');
+                grid.className = 'dashboard-grid';
+                grid.style.gridTemplateColumns = 'minmax(0, 1fr) minmax(0, 1fr)';
+                grid.style.marginTop = '28px';
+
+                const hotlistColumn = document.createElement('div');
+                hotlistColumn.className = 'dashboard-column';
+                hotlistColumn.innerHTML = `
+                    <div class="dashboard-card dashboard-hotlist">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">各平台热榜</div>
+                            <div class="dashboard-card-meta">${hotlistTotalCount} 条</div>
+                        </div>
+                        <div class="rank-explain">热榜来源：今日头条、百度热搜、华尔街见闻、澎湃新闻、bilibili 热搜、财联社热门、凤凰网、贴吧、微信热文榜、贴吧热议榜、腾讯新闻热点榜、虎扑步行街热帖、微博、抖音、知乎。</div>
+                    </div>`;
+                hotlistColumn.firstElementChild.appendChild(hotlist);
+
+                const rssColumn = document.createElement('div');
+                rssColumn.className = 'dashboard-column';
+                rssColumn.innerHTML = `<div class="dashboard-card dashboard-rss"></div>`;
+                const rssCard = rssColumn.firstElementChild;
+                rssCard.appendChild(rss);
+                const rssTitle = rss.querySelector('.rss-section-title');
+                if (rssTitle) rssTitle.textContent = '重点网站要闻';
+                const rssCountEl = rss.querySelector('.rss-section-count');
+                if (rssCountEl) rssCountEl.className = 'dashboard-card-meta';
+                const rssSources = document.createElement('div');
+                rssSources.className = 'rank-explain';
+                rssSources.textContent = '网站来源：BBC 英文网、BBC 国际、美联社政治、美联社国际、金融时报涉华、NPR 国际、新闻 - 美国之音、卫报涉华、南华早报涉华、新闻周刊政治、新闻周刊国际、港澳 - 美国之音、台湾 - 美国之音、联合早报涉华、联合早报国际、南方周末、观察者网、法广涉华、纽约时报涉华。';
+                const rssHeader = rss.querySelector('.rss-section-header');
+                if (rssHeader) {
+                    rssHeader.insertAdjacentElement('afterend', rssSources);
+                } else {
+                    rssCard.insertBefore(rssSources, rss);
+                }
+
+                if (originalGrid) {
+                    originalGrid.remove();
+                }
+
+                grid.appendChild(hotlistColumn);
+                grid.appendChild(rssColumn);
+                content.appendChild(grid);
+            });
+
+            async function saveAsImage() {
+                const button = event.target;
+                const originalText = button.textContent;
+
+                try {
+                    button.textContent = '生成中...';
+                    button.disabled = true;
+                    window.scrollTo(0, 0);
+
+                    // 等待页面稳定
+                    await new Promise(resolve => setTimeout(resolve, 200));
+
+                    // 截图前隐藏按钮
+                    const buttons = document.querySelector('.save-buttons');
+                    buttons.style.visibility = 'hidden';
+
+                    // 再次等待确保按钮完全隐藏
+                    await new Promise(resolve => setTimeout(resolve, 100));
+
+                    const container = document.querySelector('.container');
+
+                    const canvas = await html2canvas(container, {
+                        backgroundColor: '#ffffff',
+                        scale: 1.5,
+                        useCORS: true,
+                        allowTaint: false,
+                        imageTimeout: 10000,
+                        removeContainer: false,
+                        foreignObjectRendering: false,
+                        logging: false,
+                        width: container.offsetWidth,
+                        height: container.offsetHeight,
+                        x: 0,
+                        y: 0,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: window.innerWidth,
+                        windowHeight: window.innerHeight
+                    });
+
+                    buttons.style.visibility = 'visible';
+
+                    const link = document.createElement('a');
+                    const now = new Date();
+                    const filename = `TrendRadar_热点新闻分析_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.png`;
+
+                    link.download = filename;
+                    link.href = canvas.toDataURL('image/png', 1.0);
+
+                    // 触发下载
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    button.textContent = '保存成功!';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 2000);
+
+                } catch (error) {
+                    const buttons = document.querySelector('.save-buttons');
+                    buttons.style.visibility = 'visible';
+                    button.textContent = '保存失败';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 2000);
+                }
+            }
+
+            async function saveAsMultipleImages() {
+                const button = event.target;
+                const originalText = button.textContent;
+                const container = document.querySelector('.container');
+                const scale = 1.5;
+                const maxHeight = 5000 / scale;
+
+                try {
+                    button.textContent = '分析中...';
+                    button.disabled = true;
+
+                    // 获取所有可能的分割元素
+                    const newsItems = Array.from(container.querySelectorAll('.news-item'));
+                    const wordGroups = Array.from(container.querySelectorAll('.word-group'));
+                    const newSection = container.querySelector('.new-section');
+                    const errorSection = container.querySelector('.error-section');
+                    const header = container.querySelector('.header');
+                    const footer = container.querySelector('.footer');
+
+                    // 计算元素位置和高度
+                    const containerRect = container.getBoundingClientRect();
+                    const elements = [];
+
+                    // 添加header作为必须包含的元素
+                    elements.push({
+                        type: 'header',
+                        element: header,
+                        top: 0,
+                        bottom: header.offsetHeight,
+                        height: header.offsetHeight
+                    });
+
+                    // 添加错误信息（如果存在）
+                    if (errorSection) {
+                        const rect = errorSection.getBoundingClientRect();
+                        elements.push({
+                            type: 'error',
+                            element: errorSection,
+                            top: rect.top - containerRect.top,
+                            bottom: rect.bottom - containerRect.top,
+                            height: rect.height
+                        });
+                    }
+
+                    // 按word-group分组处理news-item
+                    wordGroups.forEach(group => {
+                        const groupRect = group.getBoundingClientRect();
+                        const groupNewsItems = group.querySelectorAll('.news-item');
+
+                        // 添加word-group的header部分
+                        const wordHeader = group.querySelector('.word-header');
+                        if (wordHeader) {
+                            const headerRect = wordHeader.getBoundingClientRect();
+                            elements.push({
+                                type: 'word-header',
+                                element: wordHeader,
+                                parent: group,
+                                top: groupRect.top - containerRect.top,
+                                bottom: headerRect.bottom - containerRect.top,
+                                height: headerRect.height
+                            });
+                        }
+
+                        // 添加每个news-item
+                        groupNewsItems.forEach(item => {
+                            const rect = item.getBoundingClientRect();
+                            elements.push({
+                                type: 'news-item',
+                                element: item,
+                                parent: group,
+                                top: rect.top - containerRect.top,
+                                bottom: rect.bottom - containerRect.top,
+                                height: rect.height
+                            });
+                        });
+                    });
+
+                    // 添加新增新闻部分
+                    if (newSection) {
+                        const rect = newSection.getBoundingClientRect();
+                        elements.push({
+                            type: 'new-section',
+                            element: newSection,
+                            top: rect.top - containerRect.top,
+                            bottom: rect.bottom - containerRect.top,
+                            height: rect.height
+                        });
+                    }
+
+                    // 添加footer
+                    const footerRect = footer.getBoundingClientRect();
+                    elements.push({
+                        type: 'footer',
+                        element: footer,
+                        top: footerRect.top - containerRect.top,
+                        bottom: footerRect.bottom - containerRect.top,
+                        height: footer.offsetHeight
+                    });
+
+                    // 计算分割点
+                    const segments = [];
+                    let currentSegment = { start: 0, end: 0, height: 0, includeHeader: true };
+                    let headerHeight = header.offsetHeight;
+                    currentSegment.height = headerHeight;
+
+                    for (let i = 1; i < elements.length; i++) {
+                        const element = elements[i];
+                        const potentialHeight = element.bottom - currentSegment.start;
+
+                        // 检查是否需要创建新分段
+                        if (potentialHeight > maxHeight && currentSegment.height > headerHeight) {
+                            // 在前一个元素结束处分割
+                            currentSegment.end = elements[i - 1].bottom;
+                            segments.push(currentSegment);
+
+                            // 开始新分段
+                            currentSegment = {
+                                start: currentSegment.end,
+                                end: 0,
+                                height: element.bottom - currentSegment.end,
+                                includeHeader: false
+                            };
+                        } else {
+                            currentSegment.height = potentialHeight;
+                            currentSegment.end = element.bottom;
+                        }
+                    }
+
+                    // 添加最后一个分段
+                    if (currentSegment.height > 0) {
+                        currentSegment.end = container.offsetHeight;
+                        segments.push(currentSegment);
+                    }
+
+                    button.textContent = `生成中 (0/${segments.length})...`;
+
+                    // 隐藏保存按钮
+                    const buttons = document.querySelector('.save-buttons');
+                    buttons.style.visibility = 'hidden';
+
+                    // 为每个分段生成图片
+                    const images = [];
+                    for (let i = 0; i < segments.length; i++) {
+                        const segment = segments[i];
+                        button.textContent = `生成中 (${i + 1}/${segments.length})...`;
+
+                        // 创建临时容器用于截图
+                        const tempContainer = document.createElement('div');
+                        tempContainer.style.cssText = `
+                            position: absolute;
+                            left: -9999px;
+                            top: 0;
+                            width: ${container.offsetWidth}px;
+                            background: white;
+                        `;
+                        tempContainer.className = 'container';
+
+                        // 克隆容器内容
+                        const clonedContainer = container.cloneNode(true);
+
+                        // 移除克隆内容中的保存按钮
+                        const clonedButtons = clonedContainer.querySelector('.save-buttons');
+                        if (clonedButtons) {
+                            clonedButtons.style.display = 'none';
+                        }
+
+                        tempContainer.appendChild(clonedContainer);
+                        document.body.appendChild(tempContainer);
+
+                        // 等待DOM更新
+                        await new Promise(resolve => setTimeout(resolve, 100));
+
+                        // 使用html2canvas截取特定区域
+                        const canvas = await html2canvas(clonedContainer, {
+                            backgroundColor: '#ffffff',
+                            scale: scale,
+                            useCORS: true,
+                            allowTaint: false,
+                            imageTimeout: 10000,
+                            logging: false,
+                            width: container.offsetWidth,
+                            height: segment.end - segment.start,
+                            x: 0,
+                            y: segment.start,
+                            windowWidth: window.innerWidth,
+                            windowHeight: window.innerHeight
+                        });
+
+                        images.push(canvas.toDataURL('image/png', 1.0));
+
+                        // 清理临时容器
+                        document.body.removeChild(tempContainer);
+                    }
+
+                    // 恢复按钮显示
+                    buttons.style.visibility = 'visible';
+
+                    // 下载所有图片
+                    const now = new Date();
+                    const baseFilename = `TrendRadar_热点新闻分析_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+
+                    for (let i = 0; i < images.length; i++) {
+                        const link = document.createElement('a');
+                        link.download = `${baseFilename}_part${i + 1}.png`;
+                        link.href = images[i];
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        // 延迟一下避免浏览器阻止多个下载
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+
+                    button.textContent = `已保存 ${segments.length} 张图片!`;
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 2000);
+
+                } catch (error) {
+                    console.error('分段保存失败:', error);
+                    const buttons = document.querySelector('.save-buttons');
+                    buttons.style.visibility = 'visible';
+                    button.textContent = '保存失败';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 2000);
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                window.scrollTo(0, 0);
+
+                const header = document.querySelector('.header');
+                const content = document.querySelector('.content');
+                const socialCard = document.querySelector('.dashboard-social');
+                const aiCard = document.querySelector('.dashboard-ai');
+                const hotlistCard = document.querySelector('.dashboard-hotlist');
+                const rssCard = document.querySelector('.dashboard-rss');
+
+                if (header) header.id = 'overview';
+                if (socialCard) socialCard.id = 'media';
+                if (hotlistCard) hotlistCard.id = 'hotlist';
+                if (rssCard) rssCard.id = 'website';
+                if (aiCard) aiCard.id = 'ai-insight';
+
+                if (content && !document.querySelector('#sources')) {
+                    const parseSourceList = (rawText, prefix) => {
+                        const text = (rawText || '').replace(prefix, '').trim();
+                        if (!text) return [];
+                        return text
+                            .split(/[、，,]\s*/)
+                            .map((item) => item.trim())
+                            .filter(Boolean);
+                    };
+
+                    const hotlistSources = parseSourceList(
+                        hotlistCard?.querySelector('.rank-explain')?.textContent?.trim(),
+                        '热榜来源：'
+                    );
+                    const rssSources = parseSourceList(
+                        rssCard?.querySelector('.rank-explain')?.textContent?.trim(),
+                        '网站来源：'
+                    );
+                    const socialSourceText = (socialCard?.querySelector('.social-sources')?.textContent || '')
+                        .replace(/^信源：/u, '')
+                        .replace(/^观察来源：/u, '')
+                        .replace(/平台：.*$/u, '')
+                        .trim();
+                    const socialSources = parseSourceList(socialSourceText, '');
+
+                    const sourceGroups = [
+                        { key: 'all', label: '全部信源', items: [] },
+                        { key: 'hotlist', label: '热榜监测', kind: 'WEB', items: hotlistSources },
+                        { key: 'website', label: '网站监测', kind: 'RSS', items: rssSources },
+                        { key: 'media', label: '媒体观测', kind: 'SOCIAL', items: socialSources },
+                    ];
+                    sourceGroups[0].items = [...hotlistSources, ...rssSources, ...socialSources];
+
+                    const iconForKind = (kind) => {
+                        if (kind === 'SOCIAL') return '◉';
+                        if (kind === 'RSS') return '◎';
+                        return '◌';
+                    };
+
+                    const buildCards = (groupKey) => {
+                        const groups = groupKey === 'all'
+                            ? sourceGroups.filter((group) => group.key !== 'all')
+                            : sourceGroups.filter((group) => group.key === groupKey);
+
+                        return groups.flatMap((group) => group.items.map((name) => `
+                            <article class="pulse-static-source-card">
+                                <div class="pulse-static-source-head">
+                                    <div class="pulse-static-source-brand">
+                                        <div class="pulse-static-source-icon">${iconForKind(group.kind)}</div>
+                                        <div class="pulse-static-source-name">${name}</div>
+                                    </div>
+                                    <div class="pulse-static-source-status">
+                                        <span class="pulse-static-source-status-dot"></span>
+                                        Healthy
+                                    </div>
+                                </div>
+                                <div class="pulse-static-source-tag" data-kind="${group.kind}">${group.kind}</div>
+                                <div class="pulse-static-source-meta">最近同步：本轮报告</div>
+                                <div class="pulse-static-source-extra">分组：${group.label}</div>
+                            </article>
+                        `)).join('');
+                    };
+
+                    const sourceSection = document.createElement('section');
+                    sourceSection.id = 'sources';
+                    sourceSection.className = 'pulse-static-sources';
+                    sourceSection.innerHTML = `
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">信源汇总</div>
+                        </div>
+                        <div class="pulse-static-source-tabs">
+                            ${sourceGroups.map((group, index) => `
+                                <button type="button" class="pulse-static-source-tab${index === 0 ? ' is-active' : ''}" data-group="${group.key}">
+                                    <span>${group.label}</span>
+                                    <span class="pulse-static-source-tab-count">${group.items.length}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="pulse-static-sources-grid">
+                            ${buildCards('all')}
+                        </div>
+                    `;
+                    content.appendChild(sourceSection);
+
+                    const tabs = Array.from(sourceSection.querySelectorAll('.pulse-static-source-tab'));
+                    const grid = sourceSection.querySelector('.pulse-static-sources-grid');
+                    tabs.forEach((tab) => {
+                        tab.addEventListener('click', () => {
+                            tabs.forEach((button) => button.classList.toggle('is-active', button === tab));
+                            if (grid) {
+                                grid.innerHTML = buildCards(tab.dataset.group || 'all');
+                            }
+                        });
+                    });
+                }
+
+                const navLinks = Array.from(document.querySelectorAll('.pulse-static-nav a'));
+                const sections = navLinks
+                    .map((link) => document.querySelector(link.getAttribute('href')))
+                    .filter(Boolean);
+
+                const activateNav = () => {
+                    let current = sections[0];
+                    sections.forEach((section) => {
+                        if (window.scrollY + 140 >= section.offsetTop) {
+                            current = section;
+                        }
+                    });
+                    navLinks.forEach((link) => {
+                        link.classList.toggle('is-active', current && link.getAttribute('href') === `#${current.id}`);
+                    });
+                };
+
+                navLinks.forEach((link) => {
+                    link.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        const target = document.querySelector(link.getAttribute('href'));
+                        if (target) {
+                            window.scrollTo({ top: target.offsetTop - 20, behavior: 'smooth' });
+                        }
+                    });
+                });
+
+                window.addEventListener('scroll', activateNav, { passive: true });
+                activateNav();
+            });
+        </script>
+        </div>
+    </body>
+    </html>
+    
