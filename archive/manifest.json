@@ -1,7 +1,16 @@
 {
   "version": 1,
-  "generated_at": "2026-05-27T04:21:48.328416+00:00",
+  "generated_at": "2026-05-28T00:51:35.871122+00:00",
   "days": [
+    {
+      "date": "2026-05-28",
+      "latest_time": "08-30",
+      "latest_snapshot": {
+        "time_label": "08-30",
+        "filename": "08-30.html",
+        "relative_report_path": "html/2026-05-28/08-30.html"
+      }
+    },
     {
       "date": "2026-05-27",
       "latest_time": "12-00",
