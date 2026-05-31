@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "generated_at": "2026-05-31T01:10:27.250929+00:00",
+  "generated_at": "2026-05-31T04:42:33.197729+00:00",
   "days": [
     {
       "date": "2026-05-31",
-      "latest_time": "08-30",
+      "latest_time": "12-00",
       "latest_snapshot": {
-        "time_label": "08-30",
-        "filename": "08-30.html",
-        "relative_report_path": "html/2026-05-31/08-30.html"
+        "time_label": "12-00",
+        "filename": "12-00.html",
+        "relative_report_path": "html/2026-05-31/12-00.html"
       }
     },
     {
