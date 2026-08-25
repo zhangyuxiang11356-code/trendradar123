@@ -1,14 +1,23 @@
 {
   "version": 1,
-  "generated_at": "2026-08-24T00:54:55.328189+00:00",
+  "generated_at": "2026-08-25T00:46:09.863017+00:00",
   "days": [
     {
-      "date": "2026-08-24",
+      "date": "2026-08-25",
       "latest_time": "08-30",
       "latest_snapshot": {
         "time_label": "08-30",
         "filename": "08-30.html",
-        "relative_report_path": "html/2026-08-24/08-30.html"
+        "relative_report_path": "html/2026-08-25/08-30.html"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "latest_time": "12-00",
+      "latest_snapshot": {
+        "time_label": "12-00",
+        "filename": "12-00.html",
+        "relative_report_path": "html/2026-08-24/12-00.html"
       }
     },
     {
